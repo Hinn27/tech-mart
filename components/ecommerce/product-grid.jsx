@@ -225,6 +225,8 @@ function ProductListItem({
   product,
   onAddToCart,
 }) {
+  const productHref = `/${product.category}/${product.id}`;
+
   const badgeStyles = {
     new: 'bg-success text-success-foreground',
     sale: 'bg-destructive text-destructive-foreground',
@@ -241,7 +243,7 @@ function ProductListItem({
     <div className="group flex gap-4 p-4 rounded-xl bg-card border border-border hover:shadow-lg transition-all card-shadow">
       {/* Image */}
       <a
-        href={`/san-pham/${product.id}`}
+        href={productHref}
         className="relative w-36 h-36 shrink-0 overflow-hidden rounded-lg bg-muted"
       >
         {product.badge && (
@@ -255,16 +257,19 @@ function ProductListItem({
           </span>
         )}
         <img
-          src={product.image}
-          alt={product.name}
+          src={product.image || '/placeholder.jpg'}
+          alt={product.name || product.title || 'Sản phẩm'}
           className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+          onError={(e) => {
+            e.target.src = '/placeholder.jpg';
+          }}
         />
       </a>
 
       {/* Info */}
       <div className="flex-1 min-w-0 flex flex-col">
         <a
-          href={`/san-pham/${product.id}`}
+          href={productHref}
           className="font-semibold text-foreground line-clamp-2 group-hover:text-accent transition-colors"
         >
           {product.name}

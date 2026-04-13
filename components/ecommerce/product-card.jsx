@@ -5,9 +5,14 @@ import { Heart, Star, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { formatPrice } from '@/lib/mock-data';
+import useCartStore from '@/store/cartStore';
 
 export function ProductCard({ product, onAddToCart }) {
   const [isLiked, setIsLiked] = useState(false);
+  const addToCart = useCartStore((state) => state.addToCart);
+
+  // Xây dựng URL đúng theo danh mục
+  const productHref = `/${product.category}/${product.id}`;
 
   const badgeStyles = {
     new: 'bg-success text-success-foreground',
@@ -68,14 +73,17 @@ export function ProductCard({ product, onAddToCart }) {
 
       {/* Product Image */}
       <a
-        href={`/san-pham/${product.id}`}
+        href={productHref}
         className="relative aspect-square overflow-hidden bg-muted"
       >
         <img
-          src={product.image}
-          alt={product.name}
+          src={product.image || '/placeholder.jpg'}
+          alt={product.name || product.title || 'Sản phẩm'}
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
           loading="lazy"
+          onError={(e) => {
+            e.target.src = '/placeholder.jpg';
+          }}
         />
         {/* Overlay on hover */}
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 dark:group-hover:bg-white/5 transition-colors duration-300" />
@@ -85,7 +93,7 @@ export function ProductCard({ product, onAddToCart }) {
       <div className="flex flex-1 flex-col p-4">
         {/* Title */}
         <a
-          href={`/san-pham/${product.id}`}
+          href={productHref}
           className="font-medium text-foreground text-sm leading-snug line-clamp-2 hover:text-accent transition-colors mb-2"
           title={product.name}
         >
@@ -146,6 +154,7 @@ export function ProductCard({ product, onAddToCart }) {
         <Button
           onClick={(e) => {
             e.stopPropagation();
+            addToCart(product, 1);
             onAddToCart?.(product);
           }}
           className={cn(

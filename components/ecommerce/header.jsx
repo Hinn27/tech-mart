@@ -1,8 +1,11 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useTheme } from 'next-themes';
+import { useTheme } from '@/components/theme-provider';
+import Link from 'next/link';
 import { categories } from '@/lib/mock-data';
+import useCartStore from '@/store/cartStore';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search,
   ShoppingCart,
@@ -30,8 +33,9 @@ const categoryIcons = {
   home: <Home className="h-5 w-5" />,
 };
 
-export function Header({ cartCount, onOpenAuthModal, onOpenMobileMenu }) {
+export function Header({ onOpenAuthModal, onOpenMobileMenu }) {
   const { theme, setTheme } = useTheme();
+  const cartCount = useCartStore((state) => state.getTotalItems());
   const [mounted, setMounted] = useState(false);
   const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -135,7 +139,7 @@ export function Header({ cartCount, onOpenAuthModal, onOpenMobileMenu }) {
                   {categories.map((category) => (
                     <div key={category.id}>
                       <a
-                        href={`/danh-muc/${category.slug}`}
+                        href={`/${category.slug}`}
                         className="flex items-center gap-2 font-semibold text-foreground hover:text-accent transition-colors mb-3"
                       >
                         {categoryIcons[category.icon]}
@@ -145,7 +149,7 @@ export function Header({ cartCount, onOpenAuthModal, onOpenMobileMenu }) {
                         {category.subcategories?.map((sub) => (
                           <li key={sub.slug}>
                             <a
-                              href={`/danh-muc/${category.slug}/${sub.slug}`}
+                              href={`/${category.slug}`}
                               className="text-sm text-muted-foreground hover:text-accent transition-colors"
                             >
                               {sub.name}
@@ -251,19 +255,28 @@ export function Header({ cartCount, onOpenAuthModal, onOpenMobileMenu }) {
             </Button>
 
             {/* Cart */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="relative"
-              title={`Giỏ hàng của bạn đang có ${cartCount} sản phẩm`}
-            >
-              <ShoppingCart className="h-5 w-5" />
-              {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-accent text-accent-foreground text-xs flex items-center justify-center font-medium">
-                  {cartCount}
-                </span>
-              )}
-            </Button>
+            <Link href="/gio-hang" title={`Giỏ hàng của bạn đang có ${cartCount} sản phẩm`}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="relative"
+              >
+                <ShoppingCart className="h-5 w-5" />
+                <AnimatePresence>
+                  {cartCount > 0 && (
+                    <motion.span
+                      key={cartCount}
+                      initial={{ scale: 1.2, backgroundColor: '#fbbf24' }}
+                      animate={{ scale: 1, backgroundColor: 'transparent' }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+                      className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-accent text-accent-foreground text-xs flex items-center justify-center font-medium"
+                    >
+                      {cartCount}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
@@ -308,7 +321,7 @@ export function MobileMenu({ isOpen, onClose }) {
             {categories.map((category) => (
               <li key={category.id}>
                 <a
-                  href={`/danh-muc/${category.slug}`}
+                  href={`/${category.slug}`}
                   className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-muted transition-colors"
                   onClick={onClose}
                 >

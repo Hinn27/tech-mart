@@ -4,7 +4,13 @@
       "Bash(pnpm run *)",
       "Bash(rm *)",
       "Bash(mv *)",
-      "Bash(sed *)"
+      "Bash(sed *)",
+      "Bash(mkdir *)",
+      "Bash(ls *)",
+      "Bash(pnpm add *)",
+      "Bash(cat *)",
+      "Bash(pnpm remove *)",
+      "Bash(npx *)"
     ]
   },
   "$version": 3

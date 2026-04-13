@@ -52,7 +52,7 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     <html lang="vi" suppressHydrationWarning className="bg-background">
-      <body className={`${inter.variable} ${geistMono.variable} font-sans antialiased`}>
+      <body suppressHydrationWarning className={`${inter.variable} ${geistMono.variable} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

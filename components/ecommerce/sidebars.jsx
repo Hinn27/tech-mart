@@ -36,7 +36,7 @@ export function CategorySidebar() {
               {categories.map((category) => (
                 <li key={category.id}>
                   <a
-                    href={`/danh-muc/${category.slug}`}
+                    href={`/${category.slug}`}
                     className="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm text-foreground hover:bg-muted hover:text-accent transition-colors group"
                   >
                     <span className="flex items-center gap-3">

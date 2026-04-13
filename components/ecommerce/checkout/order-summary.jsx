@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { ShoppingBag, Tag, Loader2, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +9,7 @@ import { formatPrice } from '@/lib/mock-data';
 import { cn } from '@/lib/utils';
 
 export function OrderSummary({ items, shippingFee, onPlaceOrder }) {
+  const router = useRouter();
   const [couponCode, setCouponCode] = useState('');
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
   const [appliedCoupon, setAppliedCoupon] = useState(null);
@@ -217,7 +219,7 @@ export function OrderSummary({ items, shippingFee, onPlaceOrder }) {
 
       {/* ===== Nút HOÀN TẤT ĐẶT HÀNG — Khổng lồ, full-width ===== */}
       <Button
-        onClick={onPlaceOrder}
+        onClick={() => router.push('/dat-hang-thanh-cong')}
         className="w-full h-14 text-base font-extrabold rounded-xl bg-destructive hover:bg-destructive/90 text-white shadow-lg shadow-destructive/20 transition-all active:scale-[0.98] tracking-wide"
       >
         HOÀN TẤT ĐẶT HÀNG

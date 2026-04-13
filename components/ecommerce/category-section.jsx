@@ -17,7 +17,7 @@ export function CategorySection({ title, slug, products, onAddToCart }) {
           className="gap-1 text-accent hover:text-accent/80"
           asChild
         >
-          <a href={`/danh-muc/${slug}`}>
+          <a href={`/${slug}`}>
             Xem thêm
             <ChevronRight className="h-4 w-4" />
           </a>
