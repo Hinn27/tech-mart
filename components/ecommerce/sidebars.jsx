@@ -14,7 +14,7 @@ import {
   Zap,
 } from 'lucide-react';
 
-const categoryIcons: Record<string, React.ReactNode> = {
+const categoryIcons = {
   smartphone: <Smartphone className="h-5 w-5" />,
   tablet: <Tablet className="h-5 w-5" />,
   laptop: <Laptop className="h-5 w-5" />,

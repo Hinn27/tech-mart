@@ -16,15 +16,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { ProductDetail, ProductSpecification, ProductReview } from '@/lib/product-detail-data';
 
-interface ProductAccordionProps {
-  product: ProductDetail;
-}
-
-export function ProductAccordion({ product }: ProductAccordionProps) {
+export function ProductAccordion({ product }) {
   // Giá trị mặc định: mở accordion đầu tiên
-  const [openItems, setOpenItems] = useState<string[]>(['highlights']);
+  const [openItems, setOpenItems] = useState(['highlights']);
 
   return (
     <div className="mt-10 lg:mt-14">
@@ -177,7 +172,7 @@ export function ProductAccordion({ product }: ProductAccordionProps) {
 // Nội dung Accordion 1: Đặc điểm nổi bật
 // Bài viết (Article) chi tiết kèm hình ảnh
 // ============================================
-function HighlightsContent({ content }: { content: string }) {
+function HighlightsContent({ content }) {
   return (
     <div
       className={cn(
@@ -199,8 +194,6 @@ function HighlightsContent({ content }: { content: string }) {
 // ============================================
 function SpecificationsContent({
   specifications,
-}: {
-  specifications: ProductSpecification[];
 }) {
   return (
     <div className="space-y-6">
@@ -253,10 +246,6 @@ function ReviewsContent({
   reviews,
   rating,
   reviewCount,
-}: {
-  reviews: ProductReview[];
-  rating: number;
-  reviewCount: number;
 }) {
   const distribution = [
     { stars: 5, pct: 78, count: Math.round(reviewCount * 0.78) },

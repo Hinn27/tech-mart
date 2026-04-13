@@ -3,16 +3,8 @@
 import { ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ProductCard } from './product-card';
-import { Product } from '@/lib/mock-data';
 
-interface CategorySectionProps {
-  title: string;
-  slug: string;
-  products: Product[];
-  onAddToCart?: (product: Product) => void;
-}
-
-export function CategorySection({ title, slug, products, onAddToCart }: CategorySectionProps) {
+export function CategorySection({ title, slug, products, onAddToCart }) {
   return (
     <section className="space-y-4">
       {/* Section Header */}

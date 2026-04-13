@@ -5,22 +5,7 @@ import { Star, Minus, Plus, ShoppingCart, Zap, Gift, Check } from 'lucide-react'
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { StorageSelector, ColorSelector } from './variant-selector';
-import {
-  ProductDetail,
-  ProductVariant,
-  ProductColor,
-} from '@/lib/product-detail-data';
 import { formatPrice } from '@/lib/mock-data';
-
-interface ProductInfoProps {
-  product: ProductDetail;
-  selectedVariant: ProductVariant;
-  selectedColor: ProductColor;
-  onVariantChange: (variant: ProductVariant) => void;
-  onColorChange: (color: ProductColor) => void;
-  onAddToCart: (quantity: number) => void;
-  onBuyNow: (quantity: number) => void;
-}
 
 export function ProductInfo({
   product,
@@ -30,7 +15,7 @@ export function ProductInfo({
   onColorChange,
   onAddToCart,
   onBuyNow,
-}: ProductInfoProps) {
+}) {
   const [quantity, setQuantity] = useState(1);
 
   const discount = Math.round(

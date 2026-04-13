@@ -2,15 +2,11 @@
 
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { dealTabs, Product } from '@/lib/mock-data';
+import { dealTabs } from '@/lib/mock-data';
 import { ProductCard } from './product-card';
 import { Clock, Zap } from 'lucide-react';
 
-interface DealTabsProps {
-  onAddToCart?: (product: Product) => void;
-}
-
-export function DealTabs({ onAddToCart }: DealTabsProps) {
+export function DealTabs({ onAddToCart }) {
   const [activeTab, setActiveTab] = useState(dealTabs[0].id);
 
   const currentTab = dealTabs.find((tab) => tab.id === activeTab);
@@ -32,7 +28,7 @@ export function DealTabs({ onAddToCart }: DealTabsProps) {
             </p>
           </div>
         </div>
-        
+
         {/* Countdown Timer Mockup */}
         <div className="hidden md:flex items-center gap-2 text-sm">
           <Clock className="h-4 w-4 text-destructive" />

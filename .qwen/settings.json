@@ -3,7 +3,8 @@
     "allow": [
       "Bash(pnpm run *)",
       "Bash(rm *)",
-      "Bash(mv *)"
+      "Bash(mv *)",
+      "Bash(sed *)"
     ]
   },
   "$version": 3

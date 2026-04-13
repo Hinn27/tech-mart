@@ -4,17 +4,7 @@ import { Truck, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatPrice } from '@/lib/mock-data';
 
-interface ShippingOption {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  estimatedDays: string;
-  icon: React.ReactNode;
-  tag?: string;
-}
-
-const shippingOptions: ShippingOption[] = [
+const shippingOptions = [
   {
     id: 'standard',
     name: 'Giao Hàng Tiêu Chuẩn',
@@ -35,12 +25,7 @@ const shippingOptions: ShippingOption[] = [
   },
 ];
 
-interface ShippingMethodProps {
-  selectedMethod: string;
-  onMethodChange: (method: string, price: number) => void;
-}
-
-export function ShippingMethod({ selectedMethod, onMethodChange }: ShippingMethodProps) {
+export function ShippingMethod({ selectedMethod, onMethodChange }) {
   return (
     <div className="space-y-5">
       {/* ===== Tiêu đề ===== */}

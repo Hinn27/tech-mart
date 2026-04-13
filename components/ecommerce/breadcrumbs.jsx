@@ -3,20 +3,10 @@
 import { ChevronRight, Home } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export interface BreadcrumbItem {
-  label: string;
-  href?: string;
-}
-
-interface BreadcrumbsProps {
-  items: BreadcrumbItem[];
-  className?: string;
-}
-
-export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
+export function Breadcrumbs({ items, className }) {
   return (
     <nav
-      aria-label="Breadcrumb"
+      aria-label="Breadcrumbs"
       className={cn('flex items-center text-sm', className)}
     >
       <ol className="flex items-center flex-wrap gap-1">

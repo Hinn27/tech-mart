@@ -3,16 +3,7 @@
 import { Banknote, Wallet, Building2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-interface PaymentOption {
-  id: string;
-  name: string;
-  description: string;
-  icon: React.ReactNode;
-  iconBg?: string;
-  badge?: { text: string; color: string };
-}
-
-const paymentOptions: PaymentOption[] = [
+const paymentOptions = [
   {
     id: 'cod',
     name: 'Thanh toán khi nhận hàng (COD)',
@@ -41,12 +32,7 @@ const paymentOptions: PaymentOption[] = [
   },
 ];
 
-interface PaymentMethodProps {
-  selectedMethod: string;
-  onMethodChange: (method: string) => void;
-}
-
-export function PaymentMethod({ selectedMethod, onMethodChange }: PaymentMethodProps) {
+export function PaymentMethod({ selectedMethod, onMethodChange }) {
   return (
     <div className="space-y-5">
       {/* ===== Tiêu đề ===== */}

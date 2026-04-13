@@ -5,19 +5,7 @@ import { createPortal } from 'react-dom';
 import { CheckCircle2, X, ShoppingCart, AlertCircle, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export interface Toast {
-  id: string;
-  message: string;
-  type: 'success' | 'error' | 'info';
-  productName?: string;
-}
-
-interface ToastNotificationProps {
-  toasts: Toast[];
-  onRemove: (id: string) => void;
-}
-
-export function ToastNotification({ toasts, onRemove }: ToastNotificationProps) {
+export function ToastNotification({ toasts, onRemove }) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -47,9 +35,6 @@ export function ToastNotification({ toasts, onRemove }: ToastNotificationProps) 
 function ToastItem({
   toast,
   onRemove,
-}: {
-  toast: Toast;
-  onRemove: (id: string) => void;
 }) {
   const [isLeaving, setIsLeaving] = useState(false);
 
@@ -150,14 +135,14 @@ function ToastItem({
 // Hook for managing toasts
 // ============================================
 export function useToast() {
-  const [toasts, setToasts] = useState<Toast[]>([]);
+  const [toasts, setToasts] = useState([]);
 
-  const addToast = (toast: Omit<Toast, 'id'>) => {
+  const addToast = (toast) => {
     const id = Math.random().toString(36).substr(2, 9);
     setToasts((prev) => [...prev, { ...toast, id }]);
   };
 
-  const removeToast = (id: string) => {
+  const removeToast = (id) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 

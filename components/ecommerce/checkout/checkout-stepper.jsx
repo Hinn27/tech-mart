@@ -3,23 +3,13 @@
 import { Check, ShoppingCart, Truck, CreditCard } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-interface Step {
-  id: number;
-  name: string;
-  icon: React.ReactNode;
-}
-
-const steps: Step[] = [
+const steps = [
   { id: 1, name: 'Giỏ hàng', icon: <ShoppingCart className="h-5 w-5" /> },
   { id: 2, name: 'Giao hàng', icon: <Truck className="h-5 w-5" /> },
   { id: 3, name: 'Thanh toán', icon: <CreditCard className="h-5 w-5" /> },
 ];
 
-interface CheckoutStepperProps {
-  currentStep: number;
-}
-
-export function CheckoutStepper({ currentStep }: CheckoutStepperProps) {
+export function CheckoutStepper({ currentStep }) {
   return (
     <div className="w-full py-6 px-4">
       <div className="mx-auto max-w-lg">

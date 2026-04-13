@@ -18,7 +18,7 @@ export function HeroSlider() {
     setCurrentSlide((prev) => (prev - 1 + bannerSlides.length) % bannerSlides.length);
   }, []);
 
-  const goToSlide = useCallback((index: number) => {
+  const goToSlide = useCallback((index) => {
     setCurrentSlide(index);
     setIsAutoPlaying(false);
     setTimeout(() => setIsAutoPlaying(true), 5000);
@@ -51,7 +51,7 @@ export function HeroSlider() {
             />
             {/* Glassmorphism overlay for text */}
             <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/60 to-transparent" />
-            
+
             <div className="absolute inset-0 flex items-center">
               <div className="px-6 md:px-12 max-w-lg">
                 <p className="text-sm md:text-base font-medium text-accent mb-2">

@@ -4,18 +4,11 @@ import { useState } from 'react';
 import { ChevronDown, ChevronUp, Star, ThumbsUp, ImageOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { ProductDetail, ProductSpecification, ProductReview } from '@/lib/product-detail-data';
 
-interface ProductTabsProps {
-  product: ProductDetail;
-}
+export function ProductTabs({ product }) {
+  const [activeTab, setActiveTab] = useState('highlights');
 
-type TabId = 'highlights' | 'specs' | 'reviews';
-
-export function ProductTabs({ product }: ProductTabsProps) {
-  const [activeTab, setActiveTab] = useState<TabId>('highlights');
-
-  const tabs: { id: TabId; label: string; icon?: React.ReactNode }[] = [
+  const tabs = [
     { id: 'highlights', label: 'Đặc điểm nổi bật' },
     { id: 'specs', label: 'Thông số kỹ thuật' },
     {
@@ -78,7 +71,7 @@ export function ProductTabs({ product }: ProductTabsProps) {
 // Tab 1: Đặc điểm nổi bật - Bài viết kèm ảnh
 // Button "Xem thêm" để thu gọn nếu quá dài
 // ============================================
-function HighlightsTab({ content }: { content: string }) {
+function HighlightsTab({ content }) {
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -130,8 +123,6 @@ function HighlightsTab({ content }: { content: string }) {
 // ============================================
 function SpecificationsTab({
   specifications,
-}: {
-  specifications: ProductSpecification[];
 }) {
   return (
     <div className="space-y-8">
@@ -184,10 +175,6 @@ function ReviewsTab({
   reviews,
   rating,
   reviewCount,
-}: {
-  reviews: ProductReview[];
-  rating: number;
-  reviewCount: number;
 }) {
   // Mock distribution
   const distribution = [

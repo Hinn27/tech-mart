@@ -7,27 +7,10 @@ import { Input } from '@/components/ui/input';
 import { formatPrice } from '@/lib/mock-data';
 import { cn } from '@/lib/utils';
 
-interface CartItem {
-  product: {
-    id: string;
-    name: string;
-    price: number;
-    image: string;
-  };
-  quantity: number;
-  variant?: string;
-}
-
-interface OrderSummaryProps {
-  items: CartItem[];
-  shippingFee: number;
-  onPlaceOrder: () => void;
-}
-
-export function OrderSummary({ items, shippingFee, onPlaceOrder }: OrderSummaryProps) {
+export function OrderSummary({ items, shippingFee, onPlaceOrder }) {
   const [couponCode, setCouponCode] = useState('');
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
-  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount: number } | null>(null);
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponError, setCouponError] = useState('');
 
   // Tính toán

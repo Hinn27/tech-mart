@@ -5,19 +5,12 @@ import { cn } from '@/lib/utils';
 import { Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-interface ImageGalleryProps {
-  images: string[];
-  productName: string;
-  onWishlist?: () => void;
-  isWishlisted?: boolean;
-}
-
 export function ImageGallery({
   images,
   productName,
   onWishlist,
   isWishlisted = false,
-}: ImageGalleryProps) {
+}) {
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   return (

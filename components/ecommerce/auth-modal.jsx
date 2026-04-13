@@ -6,35 +6,21 @@ import { X, Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-interface AuthModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-type AuthMode = 'login' | 'register';
-
-interface FormErrors {
-  email?: string;
-  password?: string;
-  name?: string;
-  confirmPassword?: string;
-}
-
-export function AuthModal({ isOpen, onClose }: AuthModalProps) {
-  const [mode, setMode] = useState<AuthMode>('login');
+export function AuthModal({ isOpen, onClose }) {
+  const [mode, setMode] = useState('login');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [mounted, setMounted] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     name: '',
     confirmPassword: '',
   });
-  
-  const [errors, setErrors] = useState<FormErrors>({});
-  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
 
   useEffect(() => {
     setMounted(true);
@@ -53,17 +39,17 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
   // Handle ESC key
   useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => {
+    const handleEsc = (e) => {
       if (e.key === 'Escape') onClose();
     };
-    
+
     if (isOpen) {
       window.addEventListener('keydown', handleEsc);
     }
     return () => window.removeEventListener('keydown', handleEsc);
   }, [isOpen, onClose]);
 
-  const validateField = (name: string, value: string): string | undefined => {
+  const validateField = (name, value) => {
     switch (name) {
       case 'email':
         if (!value) return 'Vui lòng nhập email';
@@ -85,13 +71,13 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     return undefined;
   };
 
-  const handleBlur = (name: string) => {
+  const handleBlur = (name) => {
     setTouched({ ...touched, [name]: true });
-    const error = validateField(name, formData[name as keyof typeof formData]);
+    const error = validateField(name, formData[name]);
     setErrors({ ...errors, [name]: error });
   };
 
-  const handleChange = (name: string, value: string) => {
+  const handleChange = (name, value) => {
     setFormData({ ...formData, [name]: value });
     if (touched[name]) {
       const error = validateField(name, value);
@@ -99,17 +85,17 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    
-    const newErrors: FormErrors = {};
-    const fields = mode === 'login' 
-      ? ['email', 'password'] 
+
+    const newErrors = {};
+    const fields = mode === 'login'
+      ? ['email', 'password']
       : ['name', 'email', 'password', 'confirmPassword'];
-    
+
     fields.forEach((field) => {
-      const error = validateField(field, formData[field as keyof typeof formData]);
-      if (error) newErrors[field as keyof FormErrors] = error;
+      const error = validateField(field, formData[field]);
+      if (error) newErrors[field] = error;
     });
 
     setErrors(newErrors);
@@ -128,7 +114,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     setTouched({});
   };
 
-  const switchMode = (newMode: AuthMode) => {
+  const switchMode = (newMode) => {
     setMode(newMode);
     resetForm();
   };

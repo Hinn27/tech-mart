@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { ProductCard, ProductCardSkeleton } from './product-card';
-import { Product, formatPrice } from '@/lib/mock-data';
+import { formatPrice } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -23,17 +23,6 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-type SortOption = 'newest' | 'price-asc' | 'price-desc' | 'popular';
-type ViewMode = 'grid' | 'list';
-
-interface ProductGridProps {
-  products: Product[];
-  categoryTitle: string;
-  isLoading?: boolean;
-  onClearFilters?: () => void;
-  onAddToCart?: (product: Product) => void;
-}
-
 const PRODUCTS_PER_PAGE = 12;
 
 export function ProductGrid({
@@ -42,9 +31,9 @@ export function ProductGrid({
   isLoading = false,
   onClearFilters,
   onAddToCart,
-}: ProductGridProps) {
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
-  const [sortBy, setSortBy] = useState<SortOption>('newest');
+}) {
+  const [viewMode, setViewMode] = useState('grid');
+  const [sortBy, setSortBy] = useState('newest');
   const [currentPage, setCurrentPage] = useState(1);
 
   // Sort products
@@ -70,7 +59,7 @@ export function ProductGrid({
     startIndex + PRODUCTS_PER_PAGE
   );
 
-  const handlePageChange = (page: number) => {
+  const handlePageChange = (page) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -156,16 +145,6 @@ export function ProductGrid({
 // ============================================
 // Top Bar Component
 // ============================================
-interface TopBarProps {
-  title: string;
-  count: number;
-  viewMode: ViewMode;
-  sortBy: SortOption;
-  onViewModeChange: (mode: ViewMode) => void;
-  onSortChange: (sort: SortOption) => void;
-  isLoading?: boolean;
-}
-
 function TopBar({
   title,
   count,
@@ -174,7 +153,7 @@ function TopBar({
   onViewModeChange,
   onSortChange,
   isLoading,
-}: TopBarProps) {
+}) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-border">
       {/* Tiêu đề danh mục + Số lượng kết quả */}
@@ -191,7 +170,7 @@ function TopBar({
 
       <div className="flex items-center gap-3">
         {/* Dropdown Sắp xếp */}
-        <Select value={sortBy} onValueChange={(v) => onSortChange(v as SortOption)}>
+        <Select value={sortBy} onValueChange={(v) => onSortChange(v)}>
           <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="Sắp xếp theo" />
           </SelectTrigger>
@@ -245,9 +224,6 @@ function TopBar({
 function ProductListItem({
   product,
   onAddToCart,
-}: {
-  product: Product;
-  onAddToCart?: (product: Product) => void;
 }) {
   const badgeStyles = {
     new: 'bg-success text-success-foreground',
@@ -356,7 +332,7 @@ function ProductListItem({
 // ============================================
 // Empty State Component
 // ============================================
-function EmptyState({ onClearFilters }: { onClearFilters?: () => void }) {
+function EmptyState({ onClearFilters }) {
   return (
     <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
       {/* Hình minh họa giỏ hàng trống */}
@@ -387,15 +363,9 @@ function EmptyState({ onClearFilters }: { onClearFilters?: () => void }) {
 // ============================================
 // Pagination Component - MUI-style
 // ============================================
-interface PaginationProps {
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-}
-
-function Pagination({ currentPage, totalPages, onPageChange }: PaginationProps) {
-  const getPageNumbers = (): (number | 'ellipsis')[] => {
-    const pages: (number | 'ellipsis')[] = [];
+function Pagination({ currentPage, totalPages, onPageChange }) {
+  const getPageNumbers = () => {
+    const pages = [];
     const maxVisible = 7;
 
     if (totalPages <= maxVisible) {
@@ -471,7 +441,7 @@ function Pagination({ currentPage, totalPages, onPageChange }: PaginationProps) 
             key={page}
             variant={currentPage === page ? 'default' : 'ghost'}
             size="icon"
-            onClick={() => onPageChange(page as number)}
+            onClick={() => onPageChange(page)}
             className={cn(
               'h-9 w-9 text-sm font-medium',
               currentPage === page

@@ -2,23 +2,16 @@
 
 import { cn } from '@/lib/utils';
 import { Check } from 'lucide-react';
-import { ProductVariant, ProductColor } from '@/lib/product-detail-data';
 
 // ============================================
 // Bộ chọn Dung lượng - Button Group
 // Tuyệt đối KHÔNG dùng dropdown
 // ============================================
-interface StorageSelectorProps {
-  variants: ProductVariant[];
-  selectedId: string;
-  onSelect: (variant: ProductVariant) => void;
-}
-
 export function StorageSelector({
   variants,
   selectedId,
   onSelect,
-}: StorageSelectorProps) {
+}) {
   return (
     <div className="space-y-2.5">
       <label className="text-sm font-semibold text-foreground">
@@ -64,17 +57,11 @@ export function StorageSelector({
 // Bộ chọn Màu sắc - Color Swatches
 // Các hình tròn có mã màu thực tế + dấu tick
 // ============================================
-interface ColorSelectorProps {
-  colors: ProductColor[];
-  selectedId: string;
-  onSelect: (color: ProductColor) => void;
-}
-
 export function ColorSelector({
   colors,
   selectedId,
   onSelect,
-}: ColorSelectorProps) {
+}) {
   const selectedColor = colors.find((c) => c.id === selectedId);
 
   return (
@@ -137,7 +124,7 @@ export function ColorSelector({
 // ============================================
 // Helper: Xác định màu sáng hay tối để chọn màu tick phù hợp
 // ============================================
-function isLightColor(hex: string): boolean {
+function isLightColor(hex) {
   const c = hex.replace('#', '');
   const rgb = parseInt(c, 16);
   const r = (rgb >> 16) & 0xff;

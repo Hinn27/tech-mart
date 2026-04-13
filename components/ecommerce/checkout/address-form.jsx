@@ -10,17 +10,7 @@ import { Label } from '@/components/ui/label';
 // ============================================
 // Sổ địa chỉ đã lưu
 // ============================================
-interface SavedAddress {
-  id: string;
-  type: 'home' | 'office';
-  label: string;
-  name: string;
-  phone: string;
-  address: string;
-  isDefault?: boolean;
-}
-
-const savedAddresses: SavedAddress[] = [
+const savedAddresses = [
   {
     id: '1',
     type: 'home',
@@ -40,25 +30,10 @@ const savedAddresses: SavedAddress[] = [
   },
 ];
 
-interface FormData {
-  fullName: string;
-  phone: string;
-  province: string;
-  district: string;
-  ward: string;
-  address: string;
-}
-
-interface FormErrors {
-  phone?: string;
-  fullName?: string;
-  [key: string]: string | undefined;
-}
-
 export function AddressForm() {
-  const [selectedAddress, setSelectedAddress] = useState<string>('1');
+  const [selectedAddress, setSelectedAddress] = useState('1');
   const [showNewForm, setShowNewForm] = useState(false);
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState({
     fullName: '',
     phone: '0123abc', // Dữ liệu không hợp lệ để mô phỏng inline validation
     province: '',
@@ -66,19 +41,19 @@ export function AddressForm() {
     ward: '',
     address: '',
   });
-  const [errors, setErrors] = useState<FormErrors>({
+  const [errors, setErrors] = useState({
     phone: 'Vui lòng nhập số điện thoại hợp lệ',
   });
 
   // Validate phone inline
-  const validatePhone = (value: string): string | undefined => {
+  const validatePhone = (value) => {
     const phoneRegex = /^(0[3|5|7|8|9])+([0-9]{8})$/;
     if (!value.trim()) return 'Vui lòng nhập số điện thoại';
     if (!phoneRegex.test(value)) return 'Vui lòng nhập số điện thoại hợp lệ';
     return undefined;
   };
 
-  const handleInputChange = (field: keyof FormData, value: string) => {
+  const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
 
     if (field === 'phone') {
