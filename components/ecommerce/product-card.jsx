@@ -37,7 +37,7 @@ export function ProductCard({ product, onAddToCart }) {
   return (
     <div
       className={cn(
-        'group relative flex flex-col rounded-xl bg-card border border-border overflow-hidden',
+        'group relative flex flex-col rounded-xl bg-card border border-border overflow-hidden h-full',
         'transition-all duration-300 cursor-pointer',
         'hover:-translate-y-1 hover:shadow-xl',
         'dark:hover:shadow-none dark:hover:shadow-[0_0_0_1px_rgba(255,255,255,0.1)]'
@@ -77,12 +77,12 @@ export function ProductCard({ product, onAddToCart }) {
       {/* Product Image */}
       <a
         href={productHref}
-        className="relative aspect-square overflow-hidden bg-muted"
+        className="relative aspect-square overflow-hidden bg-muted flex items-center justify-center p-2"
       >
         <img
           src={product.image || '/placeholder.jpg'}
           alt={product.name || product.title || 'Sản phẩm'}
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+          className="max-h-full max-w-full object-contain transition-transform duration-500 group-hover:scale-110"
           loading="lazy"
           onError={(e) => {
             e.target.src = '/placeholder.jpg';
@@ -94,33 +94,35 @@ export function ProductCard({ product, onAddToCart }) {
 
       {/* Product Info */}
       <div className="flex flex-1 flex-col p-4">
-        {/* Title */}
-        <a
-          href={productHref}
-          className="font-medium text-foreground text-sm leading-snug line-clamp-2 hover:text-accent transition-colors mb-2"
-          title={product.name}
-        >
-          {product.name}
-        </a>
+        <div>
+          {/* Title */}
+          <a
+            href={productHref}
+            className="font-medium text-foreground text-sm leading-snug line-clamp-2 hover:text-accent transition-colors mb-2"
+            title={product.name || product.title}
+          >
+            {product.name || product.title}
+          </a>
 
-        {/* Rating */}
-        <div className="flex items-center gap-1.5 mb-3">
-          <div className="flex items-center gap-0.5">
-            {[...Array(5)].map((_, i) => (
-              <Star
-                key={i}
-                className={cn(
-                  'h-3 w-3',
-                  i < Math.floor(product.rating)
-                    ? 'fill-yellow-400 text-yellow-400'
-                    : 'fill-muted text-muted'
-                )}
-              />
-            ))}
+          {/* Rating */}
+          <div className="flex items-center gap-1.5 mb-3">
+            <div className="flex items-center gap-0.5">
+              {[...Array(5)].map((_, i) => (
+                <Star
+                  key={i}
+                  className={cn(
+                    'h-3 w-3',
+                    i < Math.floor(product.rating)
+                      ? 'fill-yellow-400 text-yellow-400'
+                      : 'fill-muted text-muted'
+                  )}
+                />
+              ))}
+            </div>
+            <span className="text-xs text-muted-foreground">
+              ({(product.reviewCount || 0).toLocaleString('vi-VN')})
+            </span>
           </div>
-          <span className="text-xs text-muted-foreground">
-            ({product.reviewCount.toLocaleString('vi-VN')})
-          </span>
         </div>
 
         {/* Price Section */}

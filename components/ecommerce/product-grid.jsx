@@ -117,7 +117,7 @@ export function ProductGrid({
 
       {/* Product Grid/List */}
       {viewMode === 'grid' ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
           {paginatedProducts.map((product) => (
             <ProductCard key={product.id} product={product} onAddToCart={onAddToCart} />
           ))}
@@ -259,7 +259,7 @@ function ProductListItem({
         <img
           src={product.image || '/placeholder.jpg'}
           alt={product.name || product.title || 'Sản phẩm'}
-          className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+          className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300"
           onError={(e) => {
             e.target.src = '/placeholder.jpg';
           }}
@@ -272,7 +272,7 @@ function ProductListItem({
           href={productHref}
           className="font-semibold text-foreground line-clamp-2 group-hover:text-accent transition-colors"
         >
-          {product.name}
+          {product.name || product.title}
         </a>
 
         {/* Rating */}
@@ -292,7 +292,7 @@ function ProductListItem({
             </svg>
           ))}
           <span className="text-xs text-muted-foreground ml-1">
-            ({product.reviewCount.toLocaleString('vi-VN')} đánh giá)
+            ({(product.reviewCount || 0).toLocaleString('vi-VN')} đánh giá)
           </span>
         </div>
 
