@@ -33,9 +33,10 @@ const categoryIcons = {
   home: <Home className="h-5 w-5" />,
 };
 
-export function Header({ onOpenAuthModal, onOpenMobileMenu }) {
+export function Header({ onOpenMobileMenu, user, openAuthModal, onSignOut }) {
   const { theme, setTheme } = useTheme();
   const cartCount = useCartStore((state) => state.getTotalItems());
+  const clearCartStore = useCartStore((state) => state.clearCart);
   const [mounted, setMounted] = useState(false);
   const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -237,14 +238,40 @@ export function Header({ onOpenAuthModal, onOpenMobileMenu }) {
             </Button>
 
             {/* Auth Button */}
-            <Button
-              variant="ghost"
-              className="hidden sm:flex gap-2"
-              onClick={onOpenAuthModal}
-            >
-              <User className="h-5 w-5" />
-              <span className="hidden md:inline">Đăng nhập</span>
-            </Button>
+            {user ? (
+              <div className="hidden sm:flex items-center gap-2">
+                {/* User Avatar */}
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50">
+                  <div className="h-7 w-7 rounded-full bg-accent text-accent-foreground flex items-center justify-center text-xs font-bold">
+                    {user.email?.charAt(0).toUpperCase() || 'U'}
+                  </div>
+                  <span className="text-sm text-foreground max-w-[120px] truncate hidden lg:inline">
+                    {user.email?.split('@')[0] || 'User'}
+                  </span>
+                </div>
+                {/* Sign Out */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="gap-2 text-sm text-muted-foreground hover:text-destructive"
+                  onClick={() => {
+                    onSignOut?.();
+                    clearCartStore();
+                  }}
+                >
+                  Đăng xuất
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant="ghost"
+                className="hidden sm:flex gap-2"
+                onClick={openAuthModal}
+              >
+                <User className="h-5 w-5" />
+                <span className="hidden md:inline">Đăng nhập</span>
+              </Button>
+            )}
 
             {/* Notifications */}
             <Button variant="ghost" size="icon" className="relative">
@@ -255,15 +282,16 @@ export function Header({ onOpenAuthModal, onOpenMobileMenu }) {
             </Button>
 
             {/* Cart */}
-            <Link href="/gio-hang" title={`Giỏ hàng của bạn đang có ${cartCount} sản phẩm`}>
+            <Link href="/gio-hang">
               <Button
                 variant="ghost"
                 size="icon"
                 className="relative"
+                title={mounted && user ? `Giỏ hàng của bạn đang có ${cartCount} sản phẩm` : 'Giỏ hàng'}
               >
                 <ShoppingCart className="h-5 w-5" />
                 <AnimatePresence>
-                  {cartCount > 0 && (
+                  {mounted && user && cartCount > 0 && (
                     <motion.span
                       key={cartCount}
                       initial={{ scale: 1.2, backgroundColor: '#fbbf24' }}

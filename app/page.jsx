@@ -15,14 +15,18 @@ import {
   tvProducts,
   applianceProducts,
 } from '@/lib/mock-data';
+import useCartStore from '@/store/cartStore';
+import useAuthStore from '@/store/authStore';
 
 export default function HomePage() {
-  const [cartCount, setCartCount] = useState(2);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const cartCount = useCartStore((state) => state.getTotalItems());
+  const clearCart = useCartStore((state) => state.clearCart);
+  const user = useAuthStore((state) => state.user);
+  const openAuthModal = useAuthStore((state) => state.openAuthModal);
+  const signOut = useAuthStore((state) => state.signOut);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleAddToCart = useCallback((product) => {
-    setCartCount((prev) => prev + 1);
     // In a real app, this would add to cart state/store
     console.log('Đã thêm vào giỏ hàng:', product.name);
   }, []);
@@ -31,9 +35,10 @@ export default function HomePage() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <Header
-        cartCount={cartCount}
-        onOpenAuthModal={() => setIsAuthModalOpen(true)}
         onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
+        user={user}
+        openAuthModal={openAuthModal}
+        onSignOut={() => { signOut(); clearCart(); }}
       />
 
       {/* Mobile Menu Drawer */}
@@ -105,10 +110,7 @@ export default function HomePage() {
       <Footer />
 
       {/* Auth Modal */}
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-      />
+      <AuthModal />
     </div>
   );
 }

@@ -10,7 +10,7 @@ import { ProductAccordion } from '@/components/ecommerce/product-detail/product-
 import { ToastNotification, useToast } from '@/components/ecommerce/product-detail/toast-notification';
 import { Footer } from '@/components/ecommerce/footer';
 import { AuthModal } from '@/components/ecommerce/auth-modal';
-import { phoneProducts } from '@/lib/mock-data';
+import { laptopProducts } from '@/lib/mock-data';
 import useCartStore from '@/store/cartStore';
 import useAuthStore from '@/store/authStore';
 
@@ -37,6 +37,21 @@ export default function ProductDetailClient({ productDetail, slug }) {
   const [selectedVariant, setSelectedVariant] = useState(productDetail?.variants?.[0]);
   const [selectedColor, setSelectedColor] = useState(productDetail?.colors?.[0]);
 
+  // Xác định danh mục hiện tại từ pathname
+  const currentCategory = pathname.includes('laptop') ? 'laptop'
+    : pathname.includes('may-tinh-bang') ? 'may-tinh-bang'
+    : pathname.includes('tivi') ? 'tivi'
+    : pathname.includes('gia-dung') ? 'gia-dung'
+    : 'dien-thoai';
+
+  const categoryNames = {
+    'dien-thoai': 'Điện thoại',
+    'laptop': 'Laptop & PC',
+    'may-tinh-bang': 'Máy tính bảng',
+    'tivi': 'Tivi',
+    'gia-dung': 'Đồ gia dụng',
+  };
+
   const handleAddToCart = useCallback((quantity) => {
     addToCart(
       {
@@ -44,7 +59,7 @@ export default function ProductDetailClient({ productDetail, slug }) {
         name: productDetail.name,
         price: productDetail.variants?.[0]?.price || 0,
         image: productDetail.images?.[0] || '',
-        category: 'dien-thoai',
+        category: currentCategory,
       },
       quantity
     );
@@ -54,7 +69,7 @@ export default function ProductDetailClient({ productDetail, slug }) {
       type: 'success',
       productName: productDetail?.name,
     });
-  }, [productDetail, addToCart, addToast]);
+  }, [productDetail, currentCategory, addToCart, addToast]);
 
   const handleBuyNow = useCallback((quantity) => {
     // Kiểm tra đăng nhập trước khi mua
@@ -73,13 +88,13 @@ export default function ProductDetailClient({ productDetail, slug }) {
         name: productDetail.name,
         price: productDetail.variants?.[0]?.price || 0,
         image: productDetail.images?.[0] || '',
-        category: 'dien-thoai',
+        category: currentCategory,
       },
       quantity
     );
 
     // Bước 3: Chuyển sang trang thanh toán
-    let checkoutRoute = '/thanh-toan-dien-thoai';
+    let checkoutRoute = '/thanh-toan-laptop'; // Mặc định
     for (const [path, route] of Object.entries(checkoutRoutes)) {
       if (pathname.includes(path)) {
         checkoutRoute = route;
@@ -87,7 +102,7 @@ export default function ProductDetailClient({ productDetail, slug }) {
       }
     }
     router.push(checkoutRoute);
-  }, [productDetail, pathname, router, addToCart, clearCart, user, openAuthModal]);
+  }, [productDetail, pathname, router, addToCart, clearCart, user, openAuthModal, currentCategory]);
 
   const handleWishlist = useCallback(() => {
     addToast({
@@ -97,12 +112,12 @@ export default function ProductDetailClient({ productDetail, slug }) {
   }, [productDetail?.name, addToast]);
 
   const breadcrumbItems = [
-    { label: 'Điện thoại', href: '/dien-thoai' },
-    { label: productDetail.shortName || productDetail.name, href: `/dien-thoai/${slug}` },
+    { label: categoryNames[currentCategory] || 'Sản phẩm', href: `/${currentCategory}` },
+    { label: productDetail.shortName || productDetail.name, href: `/${currentCategory}/${slug}` },
   ];
 
   return (
-    <div className="min-h-screen bg-background" style={{ '--accent': '#2563EB' }}>
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <Header
         cartCount={cartCount}
@@ -156,7 +171,7 @@ export default function ProductDetailClient({ productDetail, slug }) {
             Sản phẩm tương tự
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {phoneProducts
+            {laptopProducts
               .filter((p) => p.id !== slug)
               .slice(0, 4)
               .map((product) => (
@@ -175,7 +190,7 @@ export default function ProductDetailClient({ productDetail, slug }) {
                       <span
                         className={`absolute top-2 left-2 px-2 py-0.5 rounded text-xs font-semibold ${
                           product.badge === 'hot'
-                            ? 'bg-[#2563EB] text-white'
+                            ? 'bg-accent text-white'
                             : product.badge === 'sale'
                             ? 'bg-destructive text-destructive-foreground'
                             : 'bg-success text-success-foreground'
@@ -186,7 +201,7 @@ export default function ProductDetailClient({ productDetail, slug }) {
                     )}
                   </div>
                   <div className="p-3">
-                    <h3 className="text-sm font-medium text-foreground line-clamp-2 group-hover:text-[#2563EB] transition-colors">
+                    <h3 className="text-sm font-medium text-foreground line-clamp-2 group-hover:text-accent transition-colors">
                       {product.name}
                     </h3>
                     <div className="flex items-baseline gap-2 mt-2">

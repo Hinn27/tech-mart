@@ -39,7 +39,6 @@ export default function CartPage() {
   const getSubtotal = useCartStore((state) => state.getSubtotal);
   const getTotalItems = useCartStore((state) => state.getTotalItems);
 
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const subtotal = getSubtotal();
@@ -60,7 +59,6 @@ export default function CartPage() {
     return (
       <div className="min-h-screen bg-background">
         <Header
-          onOpenAuthModal={() => setIsAuthModalOpen(true)}
           onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
         />
         <MobileMenu
@@ -92,10 +90,7 @@ export default function CartPage() {
           </motion.div>
         </main>
         <Footer />
-        <AuthModal
-          isOpen={isAuthModalOpen}
-          onClose={() => setIsAuthModalOpen(false)}
-        />
+        <AuthModal />
       </div>
     );
   }
@@ -103,7 +98,6 @@ export default function CartPage() {
   return (
     <div className="min-h-screen bg-background">
       <Header
-        onOpenAuthModal={() => setIsAuthModalOpen(true)}
         onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
       />
       <MobileMenu
@@ -292,10 +286,7 @@ export default function CartPage() {
       </main>
 
       <Footer />
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-      />
+      <AuthModal />
     </div>
   );
 }

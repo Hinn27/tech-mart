@@ -15,6 +15,8 @@ export function ProductInfo({
   onColorChange,
   onAddToCart,
   onBuyNow,
+  user,
+  openAuthModal,
 }) {
   const [quantity, setQuantity] = useState(1);
 
@@ -194,22 +196,34 @@ export function ProductInfo({
           <Button
             size="lg"
             className="gap-2.5 h-14 text-base font-bold rounded-xl bg-accent hover:bg-accent/90 text-accent-foreground shadow-lg shadow-accent/20 transition-all active:scale-[0.98]"
-            onClick={() => onAddToCart(quantity)}
+            onClick={() => {
+              if (!user) {
+                openAuthModal?.();
+                return;
+              }
+              onAddToCart(quantity);
+            }}
             disabled={!selectedVariant.inStock}
           >
             <ShoppingCart className="h-5 w-5" />
-            THÊM VÀO GIỎ HÀNG
+            {user ? 'THÊM VÀO GIỎ HÀNG' : 'ĐĂNG NHẬP ĐỂ MUA'}
           </Button>
 
           {/* Nút MUA NGAY — To ngang, màu Đỏ thuần */}
           <Button
             size="lg"
             className="gap-2.5 h-14 text-base font-bold rounded-xl bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/20 transition-all active:scale-[0.98]"
-            onClick={() => onBuyNow(quantity)}
+            onClick={() => {
+              if (!user) {
+                openAuthModal?.();
+                return;
+              }
+              onBuyNow(quantity);
+            }}
             disabled={!selectedVariant.inStock}
           >
             <Zap className="h-5 w-5" />
-            MUA NGAY
+            {user ? 'MUA NGAY' : 'ĐĂNG NHẬP ĐỂ MUA'}
           </Button>
         </div>
       </div>

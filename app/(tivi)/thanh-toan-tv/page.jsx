@@ -111,7 +111,7 @@ export default function ThanhToanTvPage() {
           {/* Cột phải: Tóm tắt đơn hàng */}
           <div className="lg:col-span-1">
             <OrderSummary
-              items={cartItems}
+              
               shippingFee={shippingFee}
               onPlaceOrder={handlePlaceOrder}
             />

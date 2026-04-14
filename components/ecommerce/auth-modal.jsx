@@ -5,12 +5,22 @@ import { createPortal } from 'react-dom';
 import { X, Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import useAuthStore from '@/store/authStore';
+import { useSignIn, useSignUp } from '@/lib/auth';
 
-export function AuthModal({ isOpen, onClose }) {
+export function AuthModal() {
+  const isOpen = useAuthStore((state) => state.isAuthModalOpen);
+  const closeAuthModal = useAuthStore((state) => state.closeAuthModal);
+
+  const signIn = useSignIn();
+  const signUp = useSignUp();
+
   const [mode, setMode] = useState('login');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [serverError, setServerError] = useState('');
 
   const [formData, setFormData] = useState({
     email: '',
@@ -40,14 +50,14 @@ export function AuthModal({ isOpen, onClose }) {
   // Handle ESC key
   useEffect(() => {
     const handleEsc = (e) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') closeAuthModal();
     };
 
     if (isOpen) {
       window.addEventListener('keydown', handleEsc);
     }
     return () => window.removeEventListener('keydown', handleEsc);
-  }, [isOpen, onClose]);
+  }, [isOpen, closeAuthModal]);
 
   const validateField = (name, value) => {
     switch (name) {
@@ -79,14 +89,16 @@ export function AuthModal({ isOpen, onClose }) {
 
   const handleChange = (name, value) => {
     setFormData({ ...formData, [name]: value });
+    setServerError('');
     if (touched[name]) {
       const error = validateField(name, value);
       setErrors({ ...errors, [name]: error });
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setServerError('');
 
     const newErrors = {};
     const fields = mode === 'login'
@@ -101,10 +113,26 @@ export function AuthModal({ isOpen, onClose }) {
     setErrors(newErrors);
     setTouched(Object.fromEntries(fields.map((f) => [f, true])));
 
-    if (Object.keys(newErrors).length === 0) {
-      // Mock submit
-      console.log('Form submitted:', formData);
-      onClose();
+    if (Object.keys(newErrors).length > 0) return;
+
+    setIsLoading(true);
+
+    try {
+      if (mode === 'login') {
+        await signIn(formData.email, formData.password);
+      } else {
+        await signUp(formData.email, formData.password);
+      }
+      closeAuthModal();
+      resetForm();
+    } catch (err) {
+      setServerError(
+        mode === 'login'
+          ? 'Email hoặc mật khẩu không đúng. Vui lòng thử lại.'
+          : 'Đăng ký thất bại. Email có thể đã được sử dụng.'
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -112,6 +140,7 @@ export function AuthModal({ isOpen, onClose }) {
     setFormData({ email: '', password: '', name: '', confirmPassword: '' });
     setErrors({});
     setTouched({});
+    setServerError('');
   };
 
   const switchMode = (newMode) => {
@@ -126,14 +155,14 @@ export function AuthModal({ isOpen, onClose }) {
       {/* Overlay with glassmorphism */}
       <div
         className="absolute inset-0 bg-background/60 backdrop-blur-sm"
-        onClick={onClose}
+        onClick={closeAuthModal}
       />
 
       {/* Modal */}
       <div className="relative w-full max-w-md rounded-2xl bg-card border border-border p-6 shadow-xl animate-in zoom-in-95 fade-in duration-200">
         {/* Close Button */}
         <button
-          onClick={onClose}
+          onClick={closeAuthModal}
           className="absolute right-4 top-4 p-2 rounded-lg hover:bg-muted transition-colors"
         >
           <X className="h-5 w-5 text-muted-foreground" />
@@ -150,6 +179,13 @@ export function AuthModal({ isOpen, onClose }) {
               : 'Tạo tài khoản để trải nghiệm mua sắm tốt hơn'}
           </p>
         </div>
+
+        {/* Server Error */}
+        {serverError && (
+          <div className="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-sm text-destructive font-medium" role="alert">
+            {serverError}
+          </div>
+        )}
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -283,9 +319,12 @@ export function AuthModal({ isOpen, onClose }) {
           {/* Submit Button */}
           <Button
             type="submit"
-            className="w-full h-11 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold"
+            disabled={isLoading}
+            className="w-full h-11 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold disabled:opacity-50"
           >
-            {mode === 'login' ? 'Đăng nhập' : 'Đăng ký'}
+            {isLoading
+              ? (mode === 'login' ? 'Đang đăng nhập...' : 'Đang đăng ký...')
+              : (mode === 'login' ? 'Đăng nhập' : 'Đăng ký')}
           </Button>
         </form>
 

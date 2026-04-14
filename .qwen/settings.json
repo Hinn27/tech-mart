@@ -10,7 +10,14 @@
       "Bash(pnpm add *)",
       "Bash(cat *)",
       "Bash(pnpm remove *)",
-      "Bash(npx *)"
+      "Bash(npx *)",
+      "Bash(find *)",
+      "Bash(perl *)",
+      "Bash(grep *)",
+      "Bash(cp *)",
+      "Bash(do *)",
+      "Bash(done)",
+      "Bash(node *)"
     ]
   },
   "$version": 3

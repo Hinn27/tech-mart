@@ -6,10 +6,13 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { formatPrice } from '@/lib/mock-data';
 import useCartStore from '@/store/cartStore';
+import useAuthStore from '@/store/authStore';
 
 export function ProductCard({ product, onAddToCart }) {
   const [isLiked, setIsLiked] = useState(false);
   const addToCart = useCartStore((state) => state.addToCart);
+  const user = useAuthStore((state) => state.user);
+  const openAuthModal = useAuthStore((state) => state.openAuthModal);
 
   // Xây dựng URL đúng theo danh mục
   const productHref = `/${product.category}/${product.id}`;
@@ -154,6 +157,10 @@ export function ProductCard({ product, onAddToCart }) {
         <Button
           onClick={(e) => {
             e.stopPropagation();
+            if (!user) {
+              openAuthModal();
+              return;
+            }
             addToCart(product, 1);
             onAddToCart?.(product);
           }}

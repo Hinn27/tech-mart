@@ -9,7 +9,7 @@ import { AuthModal } from '@/components/ecommerce/auth-modal';
 import { formatPrice } from '@/lib/mock-data';
 import useCartStore from '@/store/cartStore';
 
-const ACCENT = '#2563EB';
+const ACCENT = '#FF5722';
 
 export default function DienThoaiClient({ products = [] }) {
   const addToCart = useCartStore((state) => state.addToCart);
@@ -122,7 +122,7 @@ export default function DienThoaiClient({ products = [] }) {
               Điện Thoại Chính Hãng
             </h1>
             <p className="text-sm md:text-base opacity-80 mt-2 max-w-lg hidden sm:block">
-              iPhone 15, Samsung Galaxy S24, Xiaomi 14 — Giá tốt nhất, bảo hành chính hãng, giao hàng nhanh toàn quốc.
+              MacBook Pro M3, Dell XPS 15, ASUS ROG Strix — Giá tốt nhất, bảo hành chính hãng, giao hàng nhanh toàn quốc.
             </p>
           </div>
         </div>
@@ -152,7 +152,7 @@ export default function DienThoaiClient({ products = [] }) {
                       <div
                         className={`h-4 w-4 rounded-full border-2 flex items-center justify-center transition-all ${
                           selectedBrand === brand.id
-                            ? 'border-[#2563EB]'
+                            ? 'border-[#FF5722]'
                             : 'border-border group-hover:border-muted-foreground/50'
                         }`}
                       >
@@ -193,7 +193,7 @@ export default function DienThoaiClient({ products = [] }) {
                       <div
                         className={`h-4 w-4 rounded-full border-2 flex items-center justify-center transition-all ${
                           priceRange === range.id
-                            ? 'border-[#2563EB]'
+                            ? 'border-[#FF5722]'
                             : 'border-border group-hover:border-muted-foreground/50'
                         }`}
                       >
@@ -249,8 +249,8 @@ export default function DienThoaiClient({ products = [] }) {
                         onClick={() => setSelectedBrand(brand.id)}
                         className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
                           selectedBrand === brand.id
-                            ? 'text-white border-[#2563EB]'
-                            : 'border-border text-foreground hover:border-[#2563EB]/50'
+                            ? 'text-white border-[#FF5722]'
+                            : 'border-border text-foreground hover:border-[#FF5722]/50'
                         }`}
                         style={selectedBrand === brand.id ? { backgroundColor: ACCENT } : {}}
                       >
@@ -274,8 +274,8 @@ export default function DienThoaiClient({ products = [] }) {
                         onClick={() => setPriceRange(range.id)}
                         className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
                           priceRange === range.id
-                            ? 'text-white border-[#2563EB]'
-                            : 'border-border text-foreground hover:border-[#2563EB]/50'
+                            ? 'text-white border-[#FF5722]'
+                            : 'border-border text-foreground hover:border-[#FF5722]/50'
                         }`}
                         style={priceRange === range.id ? { backgroundColor: ACCENT } : {}}
                       >
@@ -298,8 +298,8 @@ export default function DienThoaiClient({ products = [] }) {
                         onClick={() => setSortBy(sort.id)}
                         className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
                           sortBy === sort.id
-                            ? 'text-white border-[#2563EB]'
-                            : 'border-border text-foreground hover:border-[#2563EB]/50'
+                            ? 'text-white border-[#FF5722]'
+                            : 'border-border text-foreground hover:border-[#FF5722]/50'
                         }`}
                         style={sortBy === sort.id ? { backgroundColor: ACCENT } : {}}
                       >

@@ -7,22 +7,26 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { formatPrice } from '@/lib/mock-data';
 import { cn } from '@/lib/utils';
+import useCartStore from '@/store/cartStore';
 
-export function OrderSummary({ items, shippingFee, onPlaceOrder }) {
+export function OrderSummary({ shippingFee = 0, onPlaceOrder }) {
   const router = useRouter();
+  const cart = useCartStore((state) => state.cart);
+  const updateQuantity = useCartStore((state) => state.updateQuantity);
+  const removeFromCart = useCartStore((state) => state.removeFromCart);
   const [couponCode, setCouponCode] = useState('');
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponError, setCouponError] = useState('');
 
-  // Tính toán
-  const subtotal = items.reduce(
+  // Tính toán từ store thực tế
+  const subtotal = cart.reduce(
     (sum, item) => sum + item.product.price * item.quantity,
     0
   );
   const discount = appliedCoupon?.discount || 0;
   const total = subtotal + shippingFee - discount;
-  const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
+  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   // Áp dụng mã giảm giá
   const handleApplyCoupon = async () => {
@@ -64,12 +68,12 @@ export function OrderSummary({ items, shippingFee, onPlaceOrder }) {
 
       {/* ===== Giỏ hàng thu gọn — Danh sách dọc ===== */}
       <div className="py-4 space-y-4 max-h-[280px] overflow-y-auto pr-1">
-        {items.map((item) => (
-          <div key={`${item.product.id}-${item.variant}`} className="flex gap-3">
+        {cart.map((item) => (
+          <div key={`${item.product.id}-${item.category}`} className="flex gap-3">
             {/* Ảnh thumbnail nhỏ xíu */}
             <div className="relative h-14 w-14 shrink-0 rounded-lg overflow-hidden bg-muted border border-border">
               <img
-                src={item.product.image}
+                src={item.product.image || '/placeholder.jpg'}
                 alt={item.product.name}
                 className="h-full w-full object-cover"
                 loading="lazy"
@@ -87,12 +91,34 @@ export function OrderSummary({ items, shippingFee, onPlaceOrder }) {
                 </p>
               )}
               <div className="flex items-center justify-between mt-1">
-                <span className="text-xs text-muted-foreground font-medium">
-                  x{item.quantity}
-                </span>
-                <span className="text-sm font-bold text-foreground">
-                  {formatPrice(item.product.price * item.quantity)}
-                </span>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => updateQuantity(item.product.id, Math.max(1, item.quantity - 1))}
+                    className="p-0.5 hover:text-accent transition-colors"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                  <span className="text-xs font-medium px-1">x{item.quantity}</span>
+                  <button
+                    onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                    className="p-0.5 hover:text-accent transition-colors"
+                  >
+                    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                    </svg>
+                  </button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold text-foreground">
+                    {formatPrice(item.product.price * item.quantity)}
+                  </span>
+                  <button
+                    onClick={() => removeFromCart(item.product.id)}
+                    className="p-1 hover:text-destructive transition-colors"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
