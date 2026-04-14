@@ -1,18 +1,23 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
-import { Header, MobileMenu } from '@/components/ecommerce/header';
-import { Breadcrumbs } from '@/components/ecommerce/breadcrumbs';
-import { ProductGrid } from '@/components/ecommerce/product-grid';
-import { Footer } from '@/components/ecommerce/footer';
 import { AuthModal } from '@/components/ecommerce/auth-modal';
+import { Breadcrumbs } from '@/components/ecommerce/breadcrumbs';
+import { Footer } from '@/components/ecommerce/footer';
+import { Header, MobileMenu } from '@/components/ecommerce/header';
+import { ProductGrid } from '@/components/ecommerce/product-grid';
 import { formatPrice } from '@/lib/mock-data';
+import useAuthStore from '@/store/authStore';
 import useCartStore from '@/store/cartStore';
+import { useCallback, useMemo, useState } from 'react';
 
 const ACCENT = '#7C3AED';
 
 export default function DienThoaiClient({ products = [] }) {
   const addToCart = useCartStore((state) => state.addToCart);
+  const user = useAuthStore((state) => state.user);
+  const openAuthModal = useAuthStore((state) => state.openAuthModal);
+  const signOut = useAuthStore((state) => state.signOut);
+  const isLoading = useAuthStore((state) => state.isLoading);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [selectedBrand, setSelectedBrand] = useState('all');
@@ -64,13 +69,14 @@ export default function DienThoaiClient({ products = [] }) {
     return filtered;
   }, [products, selectedBrand, priceRange, sortBy]);
 
-  const breadcrumbItems = [{ label: 'Điện thoại', href: '/dien-thoai' }];
+  const breadcrumbItems = [{ label: 'Máy tính bảng', href: '/dien-thoai' }];
 
   // Empty state khi không có sản phẩm
   if (products.length === 0) {
     return (
       <div className="min-h-screen bg-background">
         <Header
+          isLoading={isLoading}
           onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
         />
         <MobileMenu
@@ -93,6 +99,7 @@ export default function DienThoaiClient({ products = [] }) {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <Header
+          isLoading={isLoading}
         onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
       />
 
@@ -105,7 +112,7 @@ export default function DienThoaiClient({ products = [] }) {
         {/* Breadcrumbs */}
         <Breadcrumbs items={breadcrumbItems} className="mb-4" />
 
-        {/* Hero Banner Điện thoại */}
+        {/* Hero Banner Máy tính bảng */}
         <div
           className="relative overflow-hidden rounded-2xl mb-8 aspect-[3/1] md:aspect-[4/1]"
           style={{ background: `linear-gradient(135deg, ${ACCENT} 0%, #1E40AF 50%, #1E3A8A 100%)` }}
@@ -122,7 +129,7 @@ export default function DienThoaiClient({ products = [] }) {
               Điện Thoại Chính Hãng
             </h1>
             <p className="text-sm md:text-base opacity-80 mt-2 max-w-lg hidden sm:block">
-              iPad Pro M4, Galaxy Tab S9 Ultra, Xiaomi Pad 6S Pro — Giá tốt nhất, bảo hành chính hãng, giao hàng nhanh toàn quốc.
+              iPhone 15, Samsung Galaxy S24, Xiaomi 14 — Giá tốt nhất, bảo hành chính hãng, giao hàng nhanh toàn quốc.
             </p>
           </div>
         </div>
@@ -224,7 +231,7 @@ export default function DienThoaiClient({ products = [] }) {
             {/* Bộ lọc mobile toggle */}
             <div className="flex items-center justify-between mb-4 lg:hidden">
               <h2 className="text-lg font-bold text-foreground">
-                Điện thoại ({sortedProducts.length} sản phẩm)
+                Máy tính bảng ({sortedProducts.length} sản phẩm)
               </h2>
               <button
                 onClick={() => setShowFilters(!showFilters)}
@@ -314,7 +321,7 @@ export default function DienThoaiClient({ products = [] }) {
             {/* Product Grid */}
             <ProductGrid
               products={sortedProducts}
-              categoryTitle="Điện thoại"
+              categoryTitle="Máy tính bảng"
               onAddToCart={handleAddToCart}
               sortBy={sortBy}
               onSortChange={setSortBy}

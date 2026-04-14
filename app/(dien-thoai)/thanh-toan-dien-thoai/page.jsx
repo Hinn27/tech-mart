@@ -1,13 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { AddressForm } from '@/components/ecommerce/checkout/address-form';
 import { CheckoutHeader } from '@/components/ecommerce/checkout/checkout-header';
 import { CheckoutStepper } from '@/components/ecommerce/checkout/checkout-stepper';
-import { AddressForm } from '@/components/ecommerce/checkout/address-form';
-import { ShippingMethod } from '@/components/ecommerce/checkout/shipping-method';
-import { PaymentMethod } from '@/components/ecommerce/checkout/payment-method';
 import { OrderSummary } from '@/components/ecommerce/checkout/order-summary';
-import { phoneProducts, formatPrice } from '@/lib/mock-data';
+import { PaymentMethod } from '@/components/ecommerce/checkout/payment-method';
+import { ShippingMethod } from '@/components/ecommerce/checkout/shipping-method';
+import { useState } from 'react';
 
 export default function ThanhToanDienThoaiPage() {
   const [currentStep, setCurrentStep] = useState(2);
@@ -110,7 +109,7 @@ export default function ThanhToanDienThoaiPage() {
           {/* Cột phải: Tóm tắt đơn hàng */}
           <div className="lg:col-span-1">
             <OrderSummary
-              
+
               shippingFee={shippingFee}
               onPlaceOrder={handlePlaceOrder}
             />

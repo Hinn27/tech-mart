@@ -17,7 +17,27 @@
       "Bash(cp *)",
       "Bash(do *)",
       "Bash(done)",
-      "Bash(node *)"
+      "Bash(node *)",
+      "Bash(then)",
+      "Bash(fi)",
+      "Bash(python3)",
+      "Bash(import *)",
+      "Bash(files_to_fix *)",
+      "Bash(\"app/(laptop)/laptop/laptop-client.jsx\", *)",
+      "Bash(\"app/(tivi)/tivi/tivi-client.jsx\", *)",
+      "Bash(\"app/(gia-dung)/gia-dung/gia-dung-client.jsx\", *)",
+      "Bash(])",
+      "Bash(template *)",
+      "Bash(\"app/(dien-thoai)/dien-thoai/dien-thoai-client.jsx\")",
+      "Bash(.read)",
+      "Bash(name, *)",
+      "Bash(content *)",
+      "Bash(\"#2563eb\", *)",
+      "Bash(\"điện thoại\", *)",
+      "Bash(as *)",
+      "Bash(f.write)",
+      "Bash(print)",
+      "Bash(pyeof)"
     ]
   },
   "$version": 3

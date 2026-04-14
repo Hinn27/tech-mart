@@ -1,18 +1,18 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import { Header, MobileMenu } from '@/components/ecommerce/header';
-import { Breadcrumbs } from '@/components/ecommerce/breadcrumbs';
-import { ImageGallery } from '@/components/ecommerce/product-detail/image-gallery';
-import { ProductInfo } from '@/components/ecommerce/product-detail/product-info';
-import { ProductAccordion } from '@/components/ecommerce/product-detail/product-accordion';
-import { ToastNotification, useToast } from '@/components/ecommerce/product-detail/toast-notification';
-import { Footer } from '@/components/ecommerce/footer';
 import { AuthModal } from '@/components/ecommerce/auth-modal';
+import { Breadcrumbs } from '@/components/ecommerce/breadcrumbs';
+import { Footer } from '@/components/ecommerce/footer';
+import { Header, MobileMenu } from '@/components/ecommerce/header';
+import { ImageGallery } from '@/components/ecommerce/product-detail/image-gallery';
+import { ProductAccordion } from '@/components/ecommerce/product-detail/product-accordion';
+import { ProductInfo } from '@/components/ecommerce/product-detail/product-info';
+import { ToastNotification, useToast } from '@/components/ecommerce/product-detail/toast-notification';
 import { phoneProducts } from '@/lib/mock-data';
-import useCartStore from '@/store/cartStore';
 import useAuthStore from '@/store/authStore';
+import useCartStore from '@/store/cartStore';
+import { usePathname, useRouter } from 'next/navigation';
+import { useCallback, useState } from 'react';
 
 // Checkout route mapping theo danh mục
 const checkoutRoutes = {
@@ -32,6 +32,7 @@ export default function ProductDetailClient({ productDetail, slug }) {
   const addToCart = useCartStore((state) => state.addToCart);
   const clearCart = useCartStore((state) => state.clearCart);
   const user = useAuthStore((state) => state.user);
+  const isLoading = useAuthStore((state) => state.isLoading);
   const openAuthModal = useAuthStore((state) => state.openAuthModal);
 
   const [selectedVariant, setSelectedVariant] = useState(productDetail?.variants?.[0]);
@@ -105,6 +106,7 @@ export default function ProductDetailClient({ productDetail, slug }) {
     <div className="min-h-screen bg-background" style={{ '--accent': '#2563EB' }}>
       {/* Header */}
       <Header
+          isLoading={isLoading}
         cartCount={cartCount}
         onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
       />

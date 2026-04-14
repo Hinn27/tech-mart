@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import { cn } from '@/lib/utils';
 import { dealTabs } from '@/lib/mock-data';
-import { ProductCard } from './product-card';
+import { cn } from '@/lib/utils';
 import { Clock, Zap } from 'lucide-react';
+import { useState } from 'react';
+import { ProductCard } from './product-card';
 
 export function DealTabs({ onAddToCart }) {
   const [activeTab, setActiveTab] = useState(dealTabs[0].id);

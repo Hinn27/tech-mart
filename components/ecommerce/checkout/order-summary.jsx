@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { ShoppingBag, Tag, Loader2, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { formatPrice } from '@/lib/mock-data';
 import { cn } from '@/lib/utils';
 import useCartStore from '@/store/cartStore';
+import { Check, Loader2, ShoppingBag, Tag, X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 export function OrderSummary({ shippingFee = 0, onPlaceOrder }) {
   const router = useRouter();

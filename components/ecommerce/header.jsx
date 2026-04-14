@@ -1,29 +1,29 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTheme } from '@/components/theme-provider';
-import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 import { categories } from '@/lib/mock-data';
+import { cn } from '@/lib/utils';
 import useCartStore from '@/store/cartStore';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
+  Bell,
+  ChevronDown,
+  Home,
+  Laptop,
+  Menu,
+  Moon,
   Search,
   ShoppingCart,
-  Bell,
-  User,
-  Menu,
-  ChevronDown,
   Smartphone,
-  Tablet,
-  Laptop,
-  Tv,
-  Home,
   Sun,
-  Moon,
+  Tablet,
+  Tv,
+  User,
   X,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import Link from 'next/link';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 const categoryIcons = {
   smartphone: <Smartphone className="h-5 w-5" />,
@@ -33,7 +33,7 @@ const categoryIcons = {
   home: <Home className="h-5 w-5" />,
 };
 
-export function Header({ onOpenMobileMenu, user, openAuthModal, onSignOut }) {
+export function Header({ onOpenMobileMenu, user, openAuthModal, onSignOut, isLoading: authLoading }) {
   const { theme, setTheme } = useTheme();
   const cartCount = useCartStore((state) => state.getTotalItems());
   const clearCartStore = useCartStore((state) => state.clearCart);
@@ -239,7 +239,9 @@ export function Header({ onOpenMobileMenu, user, openAuthModal, onSignOut }) {
             </Button>
 
             {/* Auth Button */}
-            {user ? (
+            {authLoading ? (
+              <div className="hidden sm:block w-20 h-9 rounded-lg bg-muted/50 animate-pulse" />
+            ) : user ? (
               <div className="hidden sm:flex items-center gap-2">
                 {/* User Avatar */}
                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50">

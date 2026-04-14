@@ -1,8 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-import { ProductCard, ProductCardSkeleton } from './product-card';
-import { formatPrice } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -11,17 +8,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { formatPrice } from '@/lib/mock-data';
+import { cn } from '@/lib/utils';
 import {
-  LayoutGrid,
-  List,
   ChevronLeft,
   ChevronRight,
-  PackageX,
-  RotateCcw,
   ChevronsLeft,
   ChevronsRight,
+  LayoutGrid,
+  List,
+  PackageX,
+  RotateCcw,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useState } from 'react';
+import { ProductCard, ProductCardSkeleton } from './product-card';
 
 const PRODUCTS_PER_PAGE = 12;
 

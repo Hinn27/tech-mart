@@ -1,22 +1,22 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { AuthModal } from '@/components/ecommerce/auth-modal';
+import { CategorySection } from '@/components/ecommerce/category-section';
+import { DealTabs } from '@/components/ecommerce/deal-tabs';
+import { Footer } from '@/components/ecommerce/footer';
 import { Header, MobileMenu } from '@/components/ecommerce/header';
 import { HeroSlider } from '@/components/ecommerce/hero-slider';
-import { DealTabs } from '@/components/ecommerce/deal-tabs';
-import { CategorySection } from '@/components/ecommerce/category-section';
 import { CategorySidebar, PromotionSidebar } from '@/components/ecommerce/sidebars';
-import { Footer } from '@/components/ecommerce/footer';
-import { AuthModal } from '@/components/ecommerce/auth-modal';
 import {
+  applianceProducts,
+  laptopProducts,
   phoneProducts,
   tabletProducts,
-  laptopProducts,
   tvProducts,
-  applianceProducts,
 } from '@/lib/mock-data';
-import useCartStore from '@/store/cartStore';
 import useAuthStore from '@/store/authStore';
+import useCartStore from '@/store/cartStore';
+import { useCallback, useState } from 'react';
 
 export default function HomePage() {
   const cartCount = useCartStore((state) => state.getTotalItems());
@@ -24,6 +24,7 @@ export default function HomePage() {
   const user = useAuthStore((state) => state.user);
   const openAuthModal = useAuthStore((state) => state.openAuthModal);
   const signOut = useAuthStore((state) => state.signOut);
+  const isLoading = useAuthStore((state) => state.isLoading);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleAddToCart = useCallback((product) => {
@@ -39,6 +40,7 @@ export default function HomePage() {
         user={user}
         openAuthModal={openAuthModal}
         onSignOut={() => { signOut(); clearCart(); }}
+        isLoading={isLoading}
       />
 
       {/* Mobile Menu Drawer */}

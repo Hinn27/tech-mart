@@ -1,17 +1,18 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Header, MobileMenu } from '@/components/ecommerce/header';
+import { AuthModal } from '@/components/ecommerce/auth-modal';
 import { Breadcrumbs } from '@/components/ecommerce/breadcrumbs';
 import { Footer } from '@/components/ecommerce/footer';
-import { AuthModal } from '@/components/ecommerce/auth-modal';
+import { Header, MobileMenu } from '@/components/ecommerce/header';
 import { formatPrice } from '@/lib/mock-data';
-import useCartStore from '@/store/cartStore';
-import { Trash2, Minus, Plus, ShoppingCart, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import useAuthStore from '@/store/authStore';
+import useCartStore from '@/store/cartStore';
 import { motion } from 'framer-motion';
+import { ArrowLeft, Minus, Plus, ShoppingCart, Trash2 } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 // Checkout route mapping
 const checkoutRoutes = {
@@ -39,6 +40,7 @@ export default function CartPage() {
   const getSubtotal = useCartStore((state) => state.getSubtotal);
   const getTotalItems = useCartStore((state) => state.getTotalItems);
 
+  const isLoading = useAuthStore((state) => state.isLoading);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const subtotal = getSubtotal();
@@ -59,6 +61,7 @@ export default function CartPage() {
     return (
       <div className="min-h-screen bg-background">
         <Header
+          isLoading={isLoading}
           onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
         />
         <MobileMenu
@@ -98,6 +101,7 @@ export default function CartPage() {
   return (
     <div className="min-h-screen bg-background">
       <Header
+          isLoading={isLoading}
         onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
       />
       <MobileMenu

@@ -1,8 +1,8 @@
 'use client';
 
-import { Truck, Zap } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { formatPrice } from '@/lib/mock-data';
+import { cn } from '@/lib/utils';
+import { Truck, Zap } from 'lucide-react';
 
 const shippingOptions = [
   {

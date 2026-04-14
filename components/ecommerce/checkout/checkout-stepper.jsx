@@ -1,7 +1,7 @@
 'use client';
 
-import { Check, ShoppingCart, Truck, CreditCard } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Check, CreditCard, ShoppingCart, Truck } from 'lucide-react';
 
 const steps = [
   { id: 1, name: 'Giỏ hàng', icon: <ShoppingCart className="h-5 w-5" /> },

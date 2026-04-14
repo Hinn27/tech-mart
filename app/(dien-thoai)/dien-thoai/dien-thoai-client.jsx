@@ -1,18 +1,23 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
-import { Header, MobileMenu } from '@/components/ecommerce/header';
-import { Breadcrumbs } from '@/components/ecommerce/breadcrumbs';
-import { ProductGrid } from '@/components/ecommerce/product-grid';
-import { Footer } from '@/components/ecommerce/footer';
 import { AuthModal } from '@/components/ecommerce/auth-modal';
+import { Breadcrumbs } from '@/components/ecommerce/breadcrumbs';
+import { Footer } from '@/components/ecommerce/footer';
+import { Header, MobileMenu } from '@/components/ecommerce/header';
+import { ProductGrid } from '@/components/ecommerce/product-grid';
 import { formatPrice } from '@/lib/mock-data';
+import useAuthStore from '@/store/authStore';
 import useCartStore from '@/store/cartStore';
+import { useCallback, useMemo, useState } from 'react';
 
 const ACCENT = '#2563EB';
 
 export default function DienThoaiClient({ products = [] }) {
   const addToCart = useCartStore((state) => state.addToCart);
+  const user = useAuthStore((state) => state.user);
+  const openAuthModal = useAuthStore((state) => state.openAuthModal);
+  const signOut = useAuthStore((state) => state.signOut);
+  const isLoading = useAuthStore((state) => state.isLoading);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [selectedBrand, setSelectedBrand] = useState('all');
@@ -71,6 +76,7 @@ export default function DienThoaiClient({ products = [] }) {
     return (
       <div className="min-h-screen bg-background">
         <Header
+          isLoading={isLoading}
           onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
         />
         <MobileMenu
@@ -93,6 +99,7 @@ export default function DienThoaiClient({ products = [] }) {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <Header
+          isLoading={isLoading}
         onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
       />
 

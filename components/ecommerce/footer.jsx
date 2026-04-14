@@ -1,6 +1,6 @@
 'use client';
 
-import { Mail, Phone, MapPin, Facebook, Youtube, MessageCircle } from 'lucide-react';
+import { Facebook, Mail, MapPin, MessageCircle, Phone, Youtube } from 'lucide-react';
 
 export function Footer() {
   return (

@@ -1,6 +1,7 @@
-import { Inter, Geist_Mono } from 'next/font/google'
-import { Analytics } from '@vercel/analytics/next'
+import { AuthProvider } from '@/components/auth-provider'
 import { ThemeProvider } from '@/components/theme-provider'
+import { Analytics } from '@vercel/analytics/next'
+import { Geist_Mono, Inter } from 'next/font/google'
 import './globals.css'
 
 const inter = Inter({
@@ -53,6 +54,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="vi" suppressHydrationWarning className="bg-background">
       <body suppressHydrationWarning className={`${inter.variable} ${geistMono.variable} font-sans antialiased`}>
+        <AuthProvider />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

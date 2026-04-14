@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { ChevronDown, ChevronUp, Star, ThumbsUp, ImageOff } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { ChevronDown, ChevronUp, ImageOff, Star, ThumbsUp } from 'lucide-react';
+import { useState } from 'react';
 
 export function ProductTabs({ product }) {
   const [activeTab, setActiveTab] = useState('highlights');

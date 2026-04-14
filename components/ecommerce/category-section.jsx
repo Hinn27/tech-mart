@@ -1,7 +1,7 @@
 'use client';
 
-import { ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ChevronRight } from 'lucide-react';
 import { ProductCard } from './product-card';
 
 export function CategorySection({ title, slug, products, onAddToCart }) {

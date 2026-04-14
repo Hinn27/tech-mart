@@ -1,21 +1,21 @@
 'use client';
 
-import { useState } from 'react';
-import {
-  ChevronDown,
-  ChevronUp,
-  Star,
-  ThumbsUp,
-  ImageOff,
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import {
+  ChevronDown,
+  ChevronUp,
+  ImageOff,
+  Star,
+  ThumbsUp,
+} from 'lucide-react';
+import { useState } from 'react';
 
 export function ProductAccordion({ product }) {
   // Giá trị mặc định: mở accordion đầu tiên

@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Heart } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useState } from 'react';
 
 export function ImageGallery({
   images,

@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
-import { X, Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useSignIn, useSignUp } from '@/lib/auth';
 import { cn } from '@/lib/utils';
 import useAuthStore from '@/store/authStore';
-import { useSignIn, useSignUp } from '@/lib/auth';
+import { Eye, EyeOff, Lock, Mail, User, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 export function AuthModal() {
   const isOpen = useAuthStore((state) => state.isAuthModalOpen);

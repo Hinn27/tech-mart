@@ -1,7 +1,7 @@
 'use client';
 
+import { ArrowRight, CheckCircle, ShoppingBag } from 'lucide-react';
 import Link from 'next/link';
-import { CheckCircle, ShoppingBag, ArrowRight } from 'lucide-react';
 
 export default function DatHangThanhCongPage() {
   return (

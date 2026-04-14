@@ -1,9 +1,9 @@
 'use client';
 
+import { cn } from '@/lib/utils';
+import { AlertCircle, CheckCircle2, Info, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { CheckCircle2, X, ShoppingCart, AlertCircle, Info } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 export function ToastNotification({ toasts, onRemove }) {
   const [mounted, setMounted] = useState(false);

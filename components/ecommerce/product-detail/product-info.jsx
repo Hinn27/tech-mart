@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
-import { Star, Minus, Plus, ShoppingCart, Zap, Gift, Check } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { StorageSelector, ColorSelector } from './variant-selector';
 import { formatPrice } from '@/lib/mock-data';
+import { cn } from '@/lib/utils';
+import { Check, Gift, Minus, Plus, ShoppingCart, Star, Zap } from 'lucide-react';
+import { useState } from 'react';
+import { ColorSelector, StorageSelector } from './variant-selector';
 
 export function ProductInfo({
   product,

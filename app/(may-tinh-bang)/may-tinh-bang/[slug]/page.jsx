@@ -1,5 +1,5 @@
-import { notFound } from 'next/navigation';
 import { getProductBySlug, getProductsByCategory } from '@/lib/productService';
+import { notFound } from 'next/navigation';
 import ProductDetailClient from './product-detail-client';
 
 // Static paths cho build-time

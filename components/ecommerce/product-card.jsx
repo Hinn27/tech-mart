@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
-import { Heart, Star, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 import { formatPrice } from '@/lib/mock-data';
-import useCartStore from '@/store/cartStore';
+import { cn } from '@/lib/utils';
 import useAuthStore from '@/store/authStore';
+import useCartStore from '@/store/cartStore';
+import { Heart, ShoppingCart, Star } from 'lucide-react';
+import { useState } from 'react';
 
 export function ProductCard({ product, onAddToCart }) {
   const [isLiked, setIsLiked] = useState(false);

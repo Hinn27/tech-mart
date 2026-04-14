@@ -1,7 +1,7 @@
 'use client';
 
-import { Banknote, Wallet, Building2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Banknote, Building2 } from 'lucide-react';
 
 const paymentOptions = [
   {

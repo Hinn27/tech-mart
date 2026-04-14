@@ -3,14 +3,14 @@
 import { categories, promotions } from '@/lib/mock-data';
 import { cn } from '@/lib/utils';
 import {
+  ChevronRight,
+  GraduationCap,
+  Home,
+  Laptop,
   Smartphone,
   Tablet,
-  Laptop,
-  Tv,
-  Home,
-  ChevronRight,
   Ticket,
-  GraduationCap,
+  Tv,
   Zap,
 } from 'lucide-react';
 

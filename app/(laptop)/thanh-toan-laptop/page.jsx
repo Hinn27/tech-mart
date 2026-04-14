@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { AddressForm } from '@/components/ecommerce/checkout/address-form';
 import { CheckoutHeader } from '@/components/ecommerce/checkout/checkout-header';
 import { CheckoutStepper } from '@/components/ecommerce/checkout/checkout-stepper';
-import { AddressForm } from '@/components/ecommerce/checkout/address-form';
-import { ShippingMethod } from '@/components/ecommerce/checkout/shipping-method';
-import { PaymentMethod } from '@/components/ecommerce/checkout/payment-method';
 import { OrderSummary } from '@/components/ecommerce/checkout/order-summary';
+import { PaymentMethod } from '@/components/ecommerce/checkout/payment-method';
+import { ShippingMethod } from '@/components/ecommerce/checkout/shipping-method';
+import { useState } from 'react';
 
 const ACCENT = '#FF5722';
 
@@ -111,7 +111,7 @@ export default function ThanhToanLaptopPage() {
           {/* Cột phải: Tóm tắt đơn hàng */}
           <div className="lg:col-span-1">
             <OrderSummary
-              
+
               shippingFee={shippingFee}
               onPlaceOrder={handlePlaceOrder}
             />

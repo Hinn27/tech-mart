@@ -6,12 +6,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Slider } from '@/components/ui/slider';
-import { X, RotateCcw } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { formatPrice } from '@/lib/mock-data';
+import { cn } from '@/lib/utils';
+import { RotateCcw, X } from 'lucide-react';
 
 const defaultBrands = ['Apple', 'Samsung', 'Xiaomi', 'OPPO', 'Honor', 'Huawei', 'LG', 'Sony', 'TCL', 'Dell', 'ASUS', 'Lenovo', 'Philips', 'Dyson', 'Roborock'];
 const ramOptions = ['8GB', '16GB', '32GB'];
