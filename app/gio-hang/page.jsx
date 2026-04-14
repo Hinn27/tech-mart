@@ -3,7 +3,7 @@
 import { AuthModal } from '@/components/ecommerce/auth-modal';
 import { Breadcrumbs } from '@/components/ecommerce/breadcrumbs';
 import { Footer } from '@/components/ecommerce/footer';
-import { Header, MobileMenu } from '@/components/ecommerce/header';
+import { Header } from '@/components/ecommerce/header';
 import { formatPrice } from '@/lib/mock-data';
 import { cn } from '@/lib/utils';
 import useAuthStore from '@/store/authStore';
@@ -40,10 +40,7 @@ export default function CartPage() {
   const getSubtotal = useCartStore((state) => state.getSubtotal);
   const getTotalItems = useCartStore((state) => state.getTotalItems);
 
-  const isLoading = useAuthStore((state) => state.isLoading);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  const subtotal = getSubtotal();
+      const subtotal = getSubtotal();
   const totalItems = getTotalItems();
 
   // Nhóm theo danh mục để checkout
@@ -60,15 +57,8 @@ export default function CartPage() {
   if (cart.length === 0) {
     return (
       <div className="min-h-screen bg-background">
-        <Header
-          isLoading={isLoading}
-          onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
-        />
-        <MobileMenu
-          isOpen={isMobileMenuOpen}
-          onClose={() => setIsMobileMenuOpen(false)}
-        />
-        <main className="mx-auto max-w-[1400px] px-4 py-20 text-center">
+        <Header />
+                <main className="mx-auto max-w-[1400px] px-4 py-20 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -100,16 +90,8 @@ export default function CartPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header
-          isLoading={isLoading}
-        onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
-      />
-      <MobileMenu
-        isOpen={isMobileMenuOpen}
-        onClose={() => setIsMobileMenuOpen(false)}
-      />
-
-      <main className="mx-auto max-w-[1400px] px-4 py-6">
+      <Header />
+            <main className="mx-auto max-w-[1400px] px-4 py-6">
         {/* Breadcrumbs */}
         <Breadcrumbs items={breadcrumbItems} className="mb-6" />
 

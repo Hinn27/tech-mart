@@ -4,7 +4,7 @@ import { AuthModal } from '@/components/ecommerce/auth-modal';
 import { CategorySection } from '@/components/ecommerce/category-section';
 import { DealTabs } from '@/components/ecommerce/deal-tabs';
 import { Footer } from '@/components/ecommerce/footer';
-import { Header, MobileMenu } from '@/components/ecommerce/header';
+import { Header } from '@/components/ecommerce/header';
 import { HeroSlider } from '@/components/ecommerce/hero-slider';
 import { CategorySidebar, PromotionSidebar } from '@/components/ecommerce/sidebars';
 import {
@@ -24,10 +24,7 @@ export default function HomePage() {
   const user = useAuthStore((state) => state.user);
   const openAuthModal = useAuthStore((state) => state.openAuthModal);
   const signOut = useAuthStore((state) => state.signOut);
-  const isLoading = useAuthStore((state) => state.isLoading);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  const handleAddToCart = useCallback((product) => {
+      const handleAddToCart = useCallback((product) => {
     // In a real app, this would add to cart state/store
     console.log('Đã thêm vào giỏ hàng:', product.name);
   }, []);
@@ -35,21 +32,10 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <Header
-        onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
-        user={user}
-        openAuthModal={openAuthModal}
-        onSignOut={() => { signOut(); clearCart(); }}
-        isLoading={isLoading}
-      />
+      <Header />
 
       {/* Mobile Menu Drawer */}
-      <MobileMenu
-        isOpen={isMobileMenuOpen}
-        onClose={() => setIsMobileMenuOpen(false)}
-      />
-
-      {/* Main Content */}
+            {/* Main Content */}
       <main className="mx-auto max-w-[1400px] px-4 py-6">
         {/* 3-Column Grid Layout */}
         <div className="flex gap-6">

@@ -26,7 +26,7 @@ import { ProductCard, ProductCardSkeleton } from './product-card';
 const PRODUCTS_PER_PAGE = 12;
 
 export function ProductGrid({
-  products,
+  products = [],
   categoryTitle,
   isLoading = false,
   onClearFilters,
@@ -37,7 +37,7 @@ export function ProductGrid({
   const [currentPage, setCurrentPage] = useState(1);
 
   // Sort products
-  const sortedProducts = [...products].sort((a, b) => {
+  const sortedProducts = [...(products || [])].sort((a, b) => {
     switch (sortBy) {
       case 'price-asc':
         return a.price - b.price;

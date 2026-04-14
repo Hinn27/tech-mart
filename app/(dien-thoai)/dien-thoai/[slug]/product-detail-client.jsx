@@ -3,7 +3,7 @@
 import { AuthModal } from '@/components/ecommerce/auth-modal';
 import { Breadcrumbs } from '@/components/ecommerce/breadcrumbs';
 import { Footer } from '@/components/ecommerce/footer';
-import { Header, MobileMenu } from '@/components/ecommerce/header';
+import { Header } from '@/components/ecommerce/header';
 import { ImageGallery } from '@/components/ecommerce/product-detail/image-gallery';
 import { ProductAccordion } from '@/components/ecommerce/product-detail/product-accordion';
 import { ProductInfo } from '@/components/ecommerce/product-detail/product-info';
@@ -27,13 +27,11 @@ export default function ProductDetailClient({ productDetail, slug }) {
   const router = useRouter();
   const pathname = usePathname();
   const [cartCount, setCartCount] = useState(2);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { toasts, addToast, removeToast } = useToast();
+    const { toasts, addToast, removeToast } = useToast();
   const addToCart = useCartStore((state) => state.addToCart);
   const clearCart = useCartStore((state) => state.clearCart);
   const user = useAuthStore((state) => state.user);
-  const isLoading = useAuthStore((state) => state.isLoading);
-  const openAuthModal = useAuthStore((state) => state.openAuthModal);
+    const openAuthModal = useAuthStore((state) => state.openAuthModal);
 
   const [selectedVariant, setSelectedVariant] = useState(productDetail?.variants?.[0]);
   const [selectedColor, setSelectedColor] = useState(productDetail?.colors?.[0]);
@@ -105,19 +103,10 @@ export default function ProductDetailClient({ productDetail, slug }) {
   return (
     <div className="min-h-screen bg-background" style={{ '--accent': '#2563EB' }}>
       {/* Header */}
-      <Header
-          isLoading={isLoading}
-        cartCount={cartCount}
-        onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
-      />
+      <Header />
 
       {/* Mobile Menu Drawer */}
-      <MobileMenu
-        isOpen={isMobileMenuOpen}
-        onClose={() => setIsMobileMenuOpen(false)}
-      />
-
-      {/* Main Content */}
+            {/* Main Content */}
       <main className="mx-auto max-w-[1400px] px-4 py-6">
         {/* Breadcrumbs */}
         <Breadcrumbs items={breadcrumbItems} className="mb-6" />
@@ -143,8 +132,6 @@ export default function ProductDetailClient({ productDetail, slug }) {
               onColorChange={setSelectedColor}
               onAddToCart={handleAddToCart}
               onBuyNow={handleBuyNow}
-              user={user}
-              openAuthModal={openAuthModal}
             />
           </div>
         </div>

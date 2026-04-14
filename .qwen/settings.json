@@ -37,7 +37,8 @@
       "Bash(as *)",
       "Bash(f.write)",
       "Bash(print)",
-      "Bash(pyeof)"
+      "Bash(pyeof)",
+      "Bash(else)"
     ]
   },
   "$version": 3

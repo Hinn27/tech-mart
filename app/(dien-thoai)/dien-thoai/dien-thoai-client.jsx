@@ -3,7 +3,7 @@
 import { AuthModal } from '@/components/ecommerce/auth-modal';
 import { Breadcrumbs } from '@/components/ecommerce/breadcrumbs';
 import { Footer } from '@/components/ecommerce/footer';
-import { Header, MobileMenu } from '@/components/ecommerce/header';
+import { Header } from '@/components/ecommerce/header';
 import { ProductGrid } from '@/components/ecommerce/product-grid';
 import { formatPrice } from '@/lib/mock-data';
 import useAuthStore from '@/store/authStore';
@@ -17,9 +17,7 @@ export default function DienThoaiClient({ products = [] }) {
   const user = useAuthStore((state) => state.user);
   const openAuthModal = useAuthStore((state) => state.openAuthModal);
   const signOut = useAuthStore((state) => state.signOut);
-  const isLoading = useAuthStore((state) => state.isLoading);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
+      const [showFilters, setShowFilters] = useState(false);
   const [selectedBrand, setSelectedBrand] = useState('all');
   const [priceRange, setPriceRange] = useState('all');
   const [sortBy, setSortBy] = useState('popular');
@@ -75,15 +73,8 @@ export default function DienThoaiClient({ products = [] }) {
   if (products.length === 0) {
     return (
       <div className="min-h-screen bg-background">
-        <Header
-          isLoading={isLoading}
-          onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
-        />
-        <MobileMenu
-          isOpen={isMobileMenuOpen}
-          onClose={() => setIsMobileMenuOpen(false)}
-        />
-        <main className="mx-auto max-w-[1400px] px-4 py-20 text-center">
+        <Header />
+                <main className="mx-auto max-w-[1400px] px-4 py-20 text-center">
           <div className="text-muted-foreground">
             <p className="text-lg font-medium mb-2">Đang tải dữ liệu...</p>
             <p className="text-sm">Hoặc hiện chưa có sản phẩm nào trong danh mục này.</p>
@@ -98,17 +89,8 @@ export default function DienThoaiClient({ products = [] }) {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <Header
-          isLoading={isLoading}
-        onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
-      />
-
-      <MobileMenu
-        isOpen={isMobileMenuOpen}
-        onClose={() => setIsMobileMenuOpen(false)}
-      />
-
-      <main className="mx-auto max-w-[1400px] px-4 py-6">
+      <Header />
+            <main className="mx-auto max-w-[1400px] px-4 py-6">
         {/* Breadcrumbs */}
         <Breadcrumbs items={breadcrumbItems} className="mb-4" />
 
