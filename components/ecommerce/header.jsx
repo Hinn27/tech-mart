@@ -37,6 +37,7 @@ export function Header({ onOpenMobileMenu, user, openAuthModal, onSignOut }) {
   const { theme, setTheme } = useTheme();
   const cartCount = useCartStore((state) => state.getTotalItems());
   const clearCartStore = useCartStore((state) => state.clearCart);
+  const [notificationCount, setNotificationCount] = useState(0);
   const [mounted, setMounted] = useState(false);
   const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -257,6 +258,7 @@ export function Header({ onOpenMobileMenu, user, openAuthModal, onSignOut }) {
                   onClick={() => {
                     onSignOut?.();
                     clearCartStore();
+                    setNotificationCount(0);
                   }}
                 >
                   Đăng xuất
@@ -276,9 +278,11 @@ export function Header({ onOpenMobileMenu, user, openAuthModal, onSignOut }) {
             {/* Notifications */}
             <Button variant="ghost" size="icon" className="relative">
               <Bell className="h-5 w-5" />
-              <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-destructive-foreground text-[10px] flex items-center justify-center">
-                3
-              </span>
+              {mounted && user && notificationCount > 0 && (
+                <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-destructive-foreground text-[10px] flex items-center justify-center">
+                  {notificationCount}
+                </span>
+              )}
             </Button>
 
             {/* Cart */}

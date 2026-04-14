@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
-// Kiểm tra môi trường browser để tránh lỗi SSG
+// Custom storage an toàn cho SSR
 const safeLocalStorage = {
   getItem: (name) => {
     if (typeof window === 'undefined') return null;
@@ -12,19 +12,21 @@ const safeLocalStorage = {
     }
   },
   setItem: (name, value) => {
-    if (typeof window === 'undefined') return;
-    try {
-      localStorage.setItem(name, value);
-    } catch {
-      // Ignore quota errors
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(name, value);
+      } catch {
+        // Ignore quota errors
+      }
     }
   },
   removeItem: (name) => {
-    if (typeof window === 'undefined') return;
-    try {
-      localStorage.removeItem(name);
-    } catch {
-      // Ignore errors
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem(name);
+      } catch {
+        // Ignore errors
+      }
     }
   },
 };

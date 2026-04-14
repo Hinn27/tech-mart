@@ -121,16 +121,30 @@ export function AuthModal() {
       if (mode === 'login') {
         await signIn(formData.email, formData.password);
       } else {
-        await signUp(formData.email, formData.password);
+        await signUp(formData.email, formData.password, formData.name);
       }
       closeAuthModal();
       resetForm();
     } catch (err) {
-      setServerError(
-        mode === 'login'
-          ? 'Email hoặc mật khẩu không đúng. Vui lòng thử lại.'
-          : 'Đăng ký thất bại. Email có thể đã được sử dụng.'
-      );
+      const errorMessage = err?.message || err?.error_description || '';
+
+      if (mode === 'login') {
+        if (errorMessage.includes('Invalid login credentials')) {
+          setServerError('Email hoặc mật khẩu không đúng. Vui lòng thử lại.');
+        } else if (errorMessage.includes('Email not confirmed')) {
+          setServerError('Email chưa được xác thực. Vui lòng kiểm tra hộp thư.');
+        } else {
+          setServerError(errorMessage || 'Đăng nhập thất bại. Vui lòng thử lại.');
+        }
+      } else {
+        if (errorMessage.includes('already registered') || errorMessage.includes('already been registered')) {
+          setServerError('Email này đã được đăng ký. Vui lòng sử dụng email khác hoặc đăng nhập.');
+        } else if (errorMessage.includes('password')) {
+          setServerError('Mật khẩu phải có ít nhất 6 ký tự.');
+        } else {
+          setServerError(errorMessage || 'Đăng ký thất bại. Vui lòng thử lại.');
+        }
+      }
     } finally {
       setIsLoading(false);
     }
