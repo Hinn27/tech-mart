@@ -38,7 +38,23 @@
       "Bash(f.write)",
       "Bash(print)",
       "Bash(pyeof)",
-      "Bash(else)"
+      "Bash(else)",
+      "Bash(category_map *)",
+      "Bash('app/(may-tinh-bang)/may-tinh-bang/[slug]/page.jsx': *)",
+      "Bash('app/(laptop)/laptop/[slug]/page.jsx': *)",
+      "Bash('app/(tivi)/tivi/[slug]/page.jsx': *)",
+      "Bash('app/(gia-dung)/gia-dung/[slug]/page.jsx': *)",
+      "Bash(})",
+      "Bash(try:)",
+      "Bash(r'export\\s+(async\\s+)?function\\s+generatestaticparams\\(\\)\\s*\\{[^}]+\\}',)",
+      "Bash(f'export async function generatestaticparams() {{\\n  const products = await getproductsbycategory(\\'{category}\\')",
+      "Bash(\\n *)",
+      "Bash(content,)",
+      "Bash(r'const\\s*\\{\\s*getproductdetailbyslug\\s*\\}\\s*=\\s*await\\s*import\\([^)]+\\);[^}]+if\\s*\\(!mockdata\\)\\s*\\{[^}]+\\}[^}]+return[^;]+;',)",
+      "Bash('return notfound();',)",
+      "Bash(} *)",
+      "Bash(',\n            '// *)",
+      "Bash(',\n            content,\n            flags=re.dotall\n        )\n        \n        with open(filepath, 'w)"
     ]
   },
   "$version": 3

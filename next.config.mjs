@@ -4,16 +4,12 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    // Cho phép load ảnh từ tất cả các domain https
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '**',
-      },
-    ],
-    // Cho phép cả unoptimized cho ảnh local
     unoptimized: true,
+    remotePatterns: [
+      { protocol: 'https', hostname: 'cdn.tgdd.vn' },
+      { protocol: 'https', hostname: '**' },
+    ],
   },
-}
+};
 
-export default nextConfig
+export default nextConfig;

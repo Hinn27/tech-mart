@@ -1,13 +1,11 @@
 import { notFound } from 'next/navigation';
-import { getProductBySlug } from '@/lib/productService';
-import { phoneProducts } from '@/lib/mock-data';
+import { getProductBySlug, getProductsByCategory } from '@/lib/productService';
 import ProductDetailClient from './product-detail-client';
 
-// Static paths cho build-time (dùng mock data làm fallback)
-export function generateStaticParams() {
-  return phoneProducts.map((product) => ({
-    slug: product.id,
-  }));
+// Dynamic paths từ Supabase - KHÔNG dùng mock data
+export async function generateStaticParams() {
+  const products = await getProductsByCategory('dien-thoai');
+  return products.map((product) => ({ slug: product.slug }));
 }
 
 // Server Component — fetch dữ liệu từ Supabase
@@ -17,14 +15,9 @@ export default async function ProductDetailPage({ params }) {
   // Gọi API thực tế từ Supabase
   let productDetail = await getProductBySlug(slug);
 
-  // Fallback: nếu Supabase chưa có dữ liệu, dùng mock data
+  // Nếu không có dữ liệu → 404
   if (!productDetail) {
-    const { getProductDetailBySlug } = await import('@/lib/product-detail-data');
-    const mockData = getProductDetailBySlug(slug);
-    if (!mockData) {
-      notFound();
-    }
-    return <ProductDetailClient productDetail={mockData} slug={slug} useMockData />;
+    return notFound();
   }
 
   // Bổ sung fields mặc định cho Supabase products (thiếu variants, colors, etc.)
@@ -38,9 +31,9 @@ export default async function ProductDetailPage({ params }) {
     reviews: productDetail.reviews || [],
     shortName: productDetail.name,
     images: productDetail.images || (productDetail.image ? [productDetail.image] : []),
-    reviewCount: productDetail.review_count || productDetail.reviewCount || 0,
-    soldCount: productDetail.sold_count || productDetail.soldCount || 0,
-    rating: productDetail.rating || 4.5,
+    reviewCount: productDetail.review_count ?? productDetail.reviewCount ?? 0,
+    soldCount: productDetail.sold_count ?? productDetail.soldCount ?? 0,
+    rating: productDetail.rating ?? 4.5,
   };
 
   return <ProductDetailClient productDetail={productDetail} slug={slug} />;

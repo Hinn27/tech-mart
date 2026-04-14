@@ -225,7 +225,7 @@ function ProductListItem({
   product,
   onAddToCart,
 }) {
-  const productHref = `/${product.category}/${product.id}`;
+  const productHref = `/${product.category || 'dien-thoai'}/${product.slug || product.id}`;
 
   const badgeStyles = {
     new: 'bg-success text-success-foreground',

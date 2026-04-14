@@ -15,7 +15,7 @@ export function ProductCard({ product, onAddToCart }) {
   const openAuthModal = useAuthStore((state) => state.openAuthModal);
 
   // Xây dựng URL đúng theo danh mục
-  const productHref = `/${product.category}/${product.id}`;
+  const productHref = `/${product.category || 'dien-thoai'}/${product.slug || product.id}`;
 
   const badgeStyles = {
     new: 'bg-success text-success-foreground',

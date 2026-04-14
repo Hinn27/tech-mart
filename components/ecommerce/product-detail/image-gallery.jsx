@@ -6,57 +6,72 @@ import { Heart } from 'lucide-react';
 import { useState } from 'react';
 
 export function ImageGallery({
-  images,
+  images = [],
   productName,
   onWishlist,
   isWishlisted = false,
 }) {
   const [selectedIndex, setSelectedIndex] = useState(0);
 
+  // Đảm bảo images là mảng và có ít nhất 1 ảnh
+  const safeImages = Array.isArray(images) ? images : [];
+  const displayImages = safeImages.length > 0 ? safeImages : ['/placeholder.jpg'];
+  const currentIndex = selectedIndex < displayImages.length ? selectedIndex : 0;
+
   return (
     <div className="flex flex-col gap-4">
       {/* ======================== */}
       {/* Ảnh chính 1:1 — KHÔNG zoom/kính lúp */}
       {/* ======================== */}
-      <div className="relative aspect-square overflow-hidden rounded-2xl bg-muted border border-border">
+      <div className="relative aspect-square overflow-hidden rounded-2xl bg-muted border border-border flex items-center justify-center p-2">
         <img
-          src={images[selectedIndex]}
-          alt={`${productName} - Hình ${selectedIndex + 1}`}
-          className="h-full w-full object-cover select-none"
+          src={displayImages[currentIndex]}
+          alt={`${productName} - Hình ${currentIndex + 1}`}
+          className="max-h-full max-w-full object-contain select-none"
           draggable={false}
+          onError={(e) => {
+            e.target.src = '/placeholder.jpg';
+          }}
         />
 
         {/* Badge số ảnh */}
-        <div className="absolute bottom-3 right-3 z-10 px-2.5 py-1 rounded-full bg-background/80 backdrop-blur-sm text-xs font-medium text-muted-foreground">
-          {selectedIndex + 1} / {images.length}
-        </div>
+        {displayImages.length > 1 && (
+          <div className="absolute bottom-3 right-3 z-10 px-2.5 py-1 rounded-full bg-background/80 backdrop-blur-sm text-xs font-medium text-muted-foreground">
+            {currentIndex + 1} / {displayImages.length}
+          </div>
+        )}
       </div>
 
       {/* ======================== */}
       {/* Thumbnails — 5 ảnh nhỏ ngang */}
       {/* ======================== */}
-      <div className="flex gap-2.5 overflow-x-auto pb-1 hide-scrollbar">
-        {images.slice(0, 5).map((image, index) => (
-          <button
-            key={index}
-            onClick={() => setSelectedIndex(index)}
-            className={cn(
-              'relative h-[72px] w-[72px] flex-shrink-0 rounded-xl overflow-hidden border-2 transition-all duration-200',
-              selectedIndex === index
-                ? 'border-accent ring-2 ring-accent/30 scale-[1.05]'
-                : 'border-border hover:border-muted-foreground/50 hover:scale-[1.02]'
-            )}
-            aria-label={`Xem ảnh ${index + 1}`}
-          >
-            <img
-              src={image}
-              alt={`${productName} - Ảnh ${index + 1}`}
-              className="h-full w-full object-cover"
-              loading="lazy"
-            />
-          </button>
-        ))}
-      </div>
+      {displayImages.length > 1 && (
+        <div className="flex gap-2.5 overflow-x-auto pb-1 hide-scrollbar">
+          {displayImages.slice(0, 5).map((image, index) => (
+            <button
+              key={index}
+              onClick={() => setSelectedIndex(index)}
+              className={cn(
+                'relative h-[72px] w-[72px] flex-shrink-0 rounded-xl overflow-hidden border-2 transition-all duration-200',
+                currentIndex === index
+                  ? 'border-accent ring-2 ring-accent/30 scale-[1.05]'
+                  : 'border-border hover:border-muted-foreground/50 hover:scale-[1.02]'
+              )}
+              aria-label={`Xem ảnh ${index + 1}`}
+            >
+              <img
+                src={image}
+                alt={`${productName} - Ảnh ${index + 1}`}
+                className="h-full w-full object-cover"
+                loading="lazy"
+                onError={(e) => {
+                  e.target.src = '/placeholder.jpg';
+                }}
+              />
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* ======================== */}
       {/* Nút duy nhất: Thêm vào Yêu thích (bám toàn chiều rộng) */}
