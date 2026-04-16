@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getProductBySlug, getProductsByCategory } from '@/lib/productService';
+import { getProductBySlug, getProductsByCategory, getRelatedProducts } from '@/lib/productService';
 import ProductDetailClient from './product-detail-client';
 
 // Dynamic paths từ Supabase - KHÔNG dùng mock data
@@ -20,6 +20,9 @@ export default async function ProductDetailPage({ params }) {
     return notFound();
   }
 
+  // Lấy sản phẩm liên quan từ Supabase
+  const relatedProducts = await getRelatedProducts(productDetail.category || 'may-tinh-bang', slug, 4);
+
   // Bổ sung fields mặc định cho Supabase products
   productDetail = {
     ...productDetail,
@@ -36,5 +39,5 @@ export default async function ProductDetailPage({ params }) {
     rating: productDetail.rating ?? 4.5,
   };
 
-  return <ProductDetailClient productDetail={productDetail} slug={slug} />;
+  return <ProductDetailClient productDetail={productDetail} slug={slug} relatedProducts={relatedProducts} />;
 }

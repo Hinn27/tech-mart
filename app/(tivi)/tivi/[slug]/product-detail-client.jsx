@@ -8,7 +8,7 @@ import { ImageGallery } from '@/components/ecommerce/product-detail/image-galler
 import { ProductAccordion } from '@/components/ecommerce/product-detail/product-accordion';
 import { ProductInfo } from '@/components/ecommerce/product-detail/product-info';
 import { ToastNotification, useToast } from '@/components/ecommerce/product-detail/toast-notification';
-import { tvProducts } from '@/lib/mock-data';
+import { ProductCard } from '@/components/ecommerce/product-card';
 import useAuthStore from '@/store/authStore';
 import useCartStore from '@/store/cartStore';
 import { usePathname, useRouter } from 'next/navigation';
@@ -23,7 +23,7 @@ const checkoutRoutes = {
   '/gia-dung': '/thanh-toan-gia-dung',
 };
 
-export default function ProductDetailClient({ productDetail, slug }) {
+export default function ProductDetailClient({ productDetail, slug, relatedProducts = [] }) {
   const router = useRouter();
   const pathname = usePathname();
   const [cartCount, setCartCount] = useState(2);
@@ -160,59 +160,9 @@ export default function ProductDetailClient({ productDetail, slug }) {
             Sản phẩm tương tự
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {tvProducts
-              .filter((p) => p.id !== slug)
-              .slice(0, 4)
-              .map((product) => (
-                <a
-                  key={product.id}
-                  href={`/${product.category}/${product.id}`}
-                  className="group rounded-xl bg-card border border-border overflow-hidden hover:shadow-lg transition-all card-shadow"
-                >
-                  <div className="relative aspect-square overflow-hidden bg-muted">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    {product.badge && (
-                      <span
-                        className={`absolute top-2 left-2 px-2 py-0.5 rounded text-xs font-semibold ${
-                          product.badge === 'hot'
-                            ? 'bg-accent text-white'
-                            : product.badge === 'sale'
-                            ? 'bg-destructive text-destructive-foreground'
-                            : 'bg-success text-success-foreground'
-                        }`}
-                      >
-                        {product.badge === 'hot' ? 'Hot' : product.badge === 'sale' ? `-${product.discount}%` : 'Mới'}
-                      </span>
-                    )}
-                  </div>
-                  <div className="p-3">
-                    <h3 className="text-sm font-medium text-foreground line-clamp-2 group-hover:text-accent transition-colors">
-                      {product.name}
-                    </h3>
-                    <div className="flex items-baseline gap-2 mt-2">
-                      <span className="text-base font-bold text-destructive">
-                        {product.price.toLocaleString('vi-VN')}₫
-                      </span>
-                      {product.originalPrice && (
-                        <span className="text-xs text-muted-foreground line-through">
-                          {product.originalPrice.toLocaleString('vi-VN')}₫
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1 mt-1.5">
-                      <svg className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
-                      <span className="text-xs text-muted-foreground">{product.rating}</span>
-                      <span className="text-xs text-muted-foreground">({product.reviewCount})</span>
-                    </div>
-                  </div>
-                </a>
-              ))}
+            {relatedProducts.map((product) => (
+              <ProductCard key={product.slug || product.id} product={product} />
+            ))}
           </div>
         </section>
       </main>
