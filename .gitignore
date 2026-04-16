@@ -1,1 +1,4 @@
-(empty)
+(empty)node_modules/
+.next/
+dist/
+build/
