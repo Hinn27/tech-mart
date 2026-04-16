@@ -18,13 +18,15 @@ import useAuthStore from '@/store/authStore';
 import useCartStore from '@/store/cartStore';
 import { useCallback, useState } from 'react';
 
+export const dynamic = 'force-dynamic';
+
 export default function HomePage() {
   const cartCount = useCartStore((state) => state.getTotalItems());
   const clearCart = useCartStore((state) => state.clearCart);
   const user = useAuthStore((state) => state.user);
   const openAuthModal = useAuthStore((state) => state.openAuthModal);
   const signOut = useAuthStore((state) => state.signOut);
-      const handleAddToCart = useCallback((product) => {
+  const handleAddToCart = useCallback((product) => {
     // In a real app, this would add to cart state/store
     console.log('Đã thêm vào giỏ hàng:', product.name);
   }, []);
@@ -35,7 +37,7 @@ export default function HomePage() {
       <Header />
 
       {/* Mobile Menu Drawer */}
-            {/* Main Content */}
+      {/* Main Content */}
       <main className="mx-auto max-w-[1400px] px-4 py-6">
         {/* 3-Column Grid Layout */}
         <div className="flex gap-6">
