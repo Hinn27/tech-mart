@@ -77,19 +77,13 @@ export function ProductCard({ product, onAddToCart }) {
       {/* Product Image */}
       <a
         href={productHref}
-        className="relative aspect-square overflow-hidden bg-muted flex items-center justify-center p-2"
+        className="relative aspect-square overflow-hidden flex items-center justify-center p-2"
       >
         <img
           src={product.image || '/placeholder.jpg'}
-          alt={product.name || product.title || 'Sản phẩm'}
-          className="max-h-full max-w-full object-contain transition-transform duration-500 group-hover:scale-110"
-          loading="lazy"
-          onError={(e) => {
-            e.target.src = '/placeholder.jpg';
-          }}
+          alt={product.title || product.name || 'Sản phẩm'}
+          className="w-full aspect-square object-contain p-2"
         />
-        {/* Overlay on hover */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 dark:group-hover:bg-white/5 transition-colors duration-300" />
       </a>
 
       {/* Product Info */}
@@ -105,24 +99,20 @@ export function ProductCard({ product, onAddToCart }) {
           </a>
 
           {/* Rating */}
-          <div className="flex items-center gap-1.5 mb-3">
-            <div className="flex items-center gap-0.5">
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  className={cn(
-                    'h-3 w-3',
-                    i < Math.floor(product.rating)
-                      ? 'fill-yellow-400 text-yellow-400'
-                      : 'fill-muted text-muted'
-                  )}
-                />
+          <div className="flex items-center text-sm mt-1">
+            <span className="text-yellow-400">{'★'.repeat(Math.round(product.rating))}</span>
+            <span className="text-gray-300">{'★'.repeat(5 - Math.round(product.rating))}</span>
+            <span className="text-gray-500 ml-2">({product.reviewCount})</span>
+          </div>
+
+          {/* Specs Badges */}
+          {product.specs && Object.keys(product.specs).length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-2">
+              {Object.values(product.specs).slice(0, 2).map((val, idx) => (
+                <span key={idx} className="text-xs bg-gray-100 px-2 py-1 rounded border">{val}</span>
               ))}
             </div>
-            <span className="text-xs text-muted-foreground">
-              ({(product.reviewCount || 0).toLocaleString('vi-VN')})
-            </span>
-          </div>
+          )}
         </div>
 
         {/* Price Section */}
