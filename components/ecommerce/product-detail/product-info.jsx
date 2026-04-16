@@ -33,7 +33,7 @@ export function ProductInfo({
       {/* ======================== */}
       <div className="space-y-3">
         <h1 className="text-2xl md:text-3xl lg:text-[2rem] font-extrabold leading-tight text-foreground">
-          {product.name} {selectedVariant.storage} — {selectedColor.name}
+          {product.title || product.name} {selectedVariant.storage} — {selectedColor.name}
         </h1>
 
         {/* Số sao vàng + Số đánh giá */}

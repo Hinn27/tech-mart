@@ -55,7 +55,7 @@ export default function ProductDetailClient({ productDetail, slug, relatedProduc
     addToCart(
       {
         id: productDetail.id,
-        name: productDetail.name,
+        name: productDetail.title || productDetail.name,
         price: productDetail.variants?.[0]?.price || 0,
         image: productDetail.images?.[0] || '',
         category: currentCategory,
@@ -64,9 +64,9 @@ export default function ProductDetailClient({ productDetail, slug, relatedProduc
     );
     setCartCount((prev) => prev + quantity);
     addToast({
-      message: `Đã thêm ${quantity} ${productDetail?.name || 'sản phẩm'} vào giỏ hàng`,
+      message: `Đã thêm ${quantity} ${productDetail?.title || productDetail?.name || 'sản phẩm'} vào giỏ hàng`,
       type: 'success',
-      productName: productDetail?.name,
+      productName: productDetail?.title || productDetail?.name,
     });
   }, [productDetail, currentCategory, addToCart, addToast]);
 
@@ -84,7 +84,7 @@ export default function ProductDetailClient({ productDetail, slug, relatedProduc
     addToCart(
       {
         id: productDetail.id,
-        name: productDetail.name,
+        name: productDetail.title || productDetail.name,
         price: productDetail.variants?.[0]?.price || 0,
         image: productDetail.images?.[0] || '',
         category: currentCategory,
@@ -105,14 +105,14 @@ export default function ProductDetailClient({ productDetail, slug, relatedProduc
 
   const handleWishlist = useCallback(() => {
     addToast({
-      message: `Đã thêm "${productDetail?.name}" vào danh sách yêu thích`,
+      message: `Đã thêm "${productDetail?.title || productDetail?.name}" vào danh sách yêu thích`,
       type: 'info',
     });
-  }, [productDetail?.name, addToast]);
+  }, [productDetail?.title || productDetail?.name, addToast]);
 
   const breadcrumbItems = [
     { label: categoryNames[currentCategory] || 'Sản phẩm', href: `/${currentCategory}` },
-    { label: productDetail.shortName || productDetail.name, href: `/${currentCategory}/${slug}` },
+    { label: productDetail.shortName || productDetail.title || productDetail.name, href: `/${currentCategory}/${slug}` },
   ];
 
   return (
@@ -132,7 +132,7 @@ export default function ProductDetailClient({ productDetail, slug, relatedProduc
           <div>
             <ImageGallery
               images={productDetail.images}
-              productName={productDetail.name}
+              productName={productDetail.title || productDetail.name}
               onWishlist={handleWishlist}
             />
           </div>
