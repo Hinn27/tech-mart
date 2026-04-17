@@ -150,24 +150,24 @@ export function Footer() {
             </p>
             <div className="flex items-center gap-4">
               <img
-                src="https://via.placeholder.com/60x30?text=VISA"
+                src="/images/payment-visa.png"
                 alt="VISA"
-                className="h-6 opacity-70 hover:opacity-100 transition-opacity"
+                className="h-6 w-auto object-contain opacity-70 hover:opacity-100 transition-opacity bg-white px-1 rounded-sm"
               />
               <img
-                src="https://via.placeholder.com/60x30?text=MC"
+                src="/images/payment-mastercard.png"
                 alt="Mastercard"
-                className="h-6 opacity-70 hover:opacity-100 transition-opacity"
+                className="h-6 w-auto object-contain opacity-70 hover:opacity-100 transition-opacity bg-white px-1 rounded-sm"
               />
               <img
-                src="https://via.placeholder.com/60x30?text=MoMo"
+                src="/images/payment-momo.png"
                 alt="MoMo"
-                className="h-6 opacity-70 hover:opacity-100 transition-opacity"
+                className="h-6 w-auto object-contain opacity-70 hover:opacity-100 transition-opacity bg-white px-1 rounded-sm"
               />
               <img
-                src="https://via.placeholder.com/60x30?text=ZaloPay"
+                src="/images/payment-zalopay.png"
                 alt="ZaloPay"
-                className="h-6 opacity-70 hover:opacity-100 transition-opacity"
+                className="h-6 w-auto object-contain opacity-70 hover:opacity-100 transition-opacity bg-white px-1 rounded-sm"
               />
             </div>
           </div>
