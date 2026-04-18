@@ -1,15 +1,14 @@
 'use client';
 
-import { dealTabs } from '@/lib/mock-data';
 import { cn } from '@/lib/utils';
 import { Clock, Zap } from 'lucide-react';
 import { useState } from 'react';
 import { ProductCard } from './product-card';
 
-export function DealTabs({ onAddToCart }) {
-  const [activeTab, setActiveTab] = useState(dealTabs[0].id);
+export function DealTabs({ dealTabs, onAddToCart }) {
+  const [activeTab, setActiveTab] = useState(dealTabs?.[0]?.id || 'phone');
 
-  const currentTab = dealTabs.find((tab) => tab.id === activeTab);
+  const currentTab = dealTabs?.find((tab) => tab.id === activeTab);
 
   return (
     <section className="space-y-6">
@@ -52,7 +51,7 @@ export function DealTabs({ onAddToCart }) {
       {/* Tabs Navigation */}
       <div className="border-b border-border overflow-x-auto hide-scrollbar">
         <nav className="flex gap-1 min-w-max" role="tablist">
-          {dealTabs.map((tab) => (
+          {dealTabs?.map((tab) => (
             <button
               key={tab.id}
               role="tab"
@@ -76,7 +75,7 @@ export function DealTabs({ onAddToCart }) {
 
       {/* Products Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        {currentTab?.products.slice(0, 5).map((product) => (
+        {currentTab?.products?.slice(0, 5).map((product) => (
           <ProductCard
             key={product.id}
             product={product}

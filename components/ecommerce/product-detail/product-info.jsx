@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { formatPrice } from '@/lib/mock-data';
 import { cn } from '@/lib/utils';
+import useAuthStore from '@/store/authStore';
 import { Check, Gift, Minus, Plus, ShoppingCart, Star, Zap } from 'lucide-react';
 import { useState } from 'react';
 import { ColorSelector, StorageSelector } from './variant-selector';
@@ -198,7 +199,7 @@ export function ProductInfo({
             className="gap-2.5 h-14 text-base font-bold rounded-xl bg-accent hover:bg-accent/90 text-accent-foreground shadow-lg shadow-accent/20 transition-all active:scale-[0.98]"
             onClick={() => {
               if (!user) {
-                openAuthModal?.();
+                useAuthStore.getState().openAuthModal();
                 return;
               }
               onAddToCart(quantity);
@@ -215,7 +216,7 @@ export function ProductInfo({
             className="gap-2.5 h-14 text-base font-bold rounded-xl bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/20 transition-all active:scale-[0.98]"
             onClick={() => {
               if (!user) {
-                openAuthModal?.();
+                useAuthStore.getState().openAuthModal();
                 return;
               }
               onBuyNow(quantity);

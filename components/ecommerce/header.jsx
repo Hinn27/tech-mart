@@ -1,30 +1,30 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTheme } from '@/components/theme-provider';
-import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 import { categories } from '@/lib/mock-data';
-import useCartStore from '@/store/cartStore';
+import { cn } from '@/lib/utils';
 import useAuthStore from '@/store/authStore';
-import { motion, AnimatePresence } from 'framer-motion';
+import useCartStore from '@/store/cartStore';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
+  Bell,
+  ChevronDown,
+  Home,
+  Laptop,
+  Menu,
+  Moon,
   Search,
   ShoppingCart,
-  Bell,
-  User,
-  Menu,
-  ChevronDown,
   Smartphone,
-  Tablet,
-  Laptop,
-  Tv,
-  Home,
   Sun,
-  Moon,
+  Tablet,
+  Tv,
+  User,
   X,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import Link from 'next/link';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 const categoryIcons = {
   smartphone: <Smartphone className="h-5 w-5" />,
@@ -34,8 +34,11 @@ const categoryIcons = {
   home: <Home className="h-5 w-5" />,
 };
 
-export function Header({ user, openAuthModal, onSignOut, isLoading: authLoading }) {
+export function Header() {
   const { theme, setTheme } = useTheme();
+  const user = useAuthStore((state) => state.user);
+  const openAuthModal = useAuthStore((state) => state.openAuthModal);
+  const authLoading = useAuthStore((state) => state.isLoading);
   const cartCount = useCartStore((state) => state.getTotalItems());
   const clearCartStore = useCartStore((state) => state.clearCart);
   const [notificationCount, setNotificationCount] = useState(0);
@@ -255,8 +258,10 @@ export function Header({ user, openAuthModal, onSignOut, isLoading: authLoading 
                     variant="ghost"
                     size="sm"
                     className="gap-2 text-sm text-muted-foreground hover:text-destructive"
-                    onClick={() => {
-                      onSignOut?.();
+                    onClick={async () => {
+                      const { supabase } = await import('@/lib/supabase');
+                      await supabase.auth.signOut();
+                      useAuthStore.getState().signOut();
                       clearCartStore();
                       setNotificationCount(0);
                     }}
@@ -268,7 +273,7 @@ export function Header({ user, openAuthModal, onSignOut, isLoading: authLoading 
                 <Button
                   variant="ghost"
                   className="hidden sm:flex gap-2"
-                  onClick={openAuthModal}
+                  onClick={() => openAuthModal()}
                 >
                   <User className="h-5 w-5" />
                   <span className="hidden md:inline">Đăng nhập</span>
