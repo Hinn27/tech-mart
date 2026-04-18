@@ -80,9 +80,13 @@ export function ProductCard({ product, onAddToCart }) {
         className="relative aspect-square overflow-hidden flex items-center justify-center p-2"
       >
         <img
-          src={product.image || '/placeholder.jpg'}
+          src={product.image || '/placeholder-logo.png'}
           alt={product.title || product.name || 'Sản phẩm'}
-          className="w-full aspect-square object-contain p-2"
+          className="w-full aspect-square object-contain p-2 bg-white"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = '/placeholder-logo.png';
+          }}
         />
       </a>
 
