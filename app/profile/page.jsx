@@ -1058,7 +1058,7 @@ function ProductAdmin() {
                     className="w-full px-3 py-2 rounded-lg border border-input bg-background font-mono text-xs focus:outline-none focus:ring-2 focus:ring-accent"
                     placeholder='{"cpu": "Apple M1", "ram": "8GB"}'
                   />
-                  <p className="text-[10px] text-muted-foreground">Phải là chuỗi JSON hợp lệ. VD: `{"màn hình": "6.1 inch", "chip": "Apple A15"}`</p>
+                  <p className="text-[10px] text-muted-foreground">Phải là chuỗi JSON hợp lệ. VD: {'`{"màn hình": "6.1 inch", "chip": "Apple A15"}`'}</p>
                 </div>
                 
                 <div className="space-y-1">
