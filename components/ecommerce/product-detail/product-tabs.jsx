@@ -17,6 +17,8 @@ export function ProductTabs({ product }) {
     },
   ];
 
+  console.log("DỮ LIỆU SPECS NHẬN ĐƯỢC:", product?.specs);
+
   return (
     <div className="mt-10 lg:mt-14">
       {/* ======================== */}
@@ -119,51 +121,42 @@ function HighlightsTab({ content }) {
 }
 
 function SpecificationsTab({ specs }) {
-  if (!specs) return null;
+  const specsData = specs;
+  
+  // 1. Nếu không có data
+  if (!specsData) return <p className="text-muted-foreground italic text-center py-6">Chưa có thông tin thông số kỹ thuật.</p>;
 
-  let parsedSpecs = {};
-  if (typeof specs === 'string') {
+  // 2. Cố gắng parse nếu nó là String
+  let parsedSpecs = specsData;
+  if (typeof specsData === 'string') {
     try {
-      parsedSpecs = JSON.parse(specs);
+      parsedSpecs = JSON.parse(specsData);
     } catch (e) {
-      if (specs.trim()) {
-        parsedSpecs = { "Thông tin": specs };
-      }
+      // Nếu string không phải JSON chuẩn, in ra luôn đoạn string đó
+      return <p className="text-foreground whitespace-pre-wrap">{specsData}</p>;
     }
-  } else if (typeof specs === 'object' && specs !== null) {
-    parsedSpecs = specs;
   }
 
-  const specEntries = Object.entries(parsedSpecs);
-
-  if (specEntries.length === 0) return null;
-
-  return (
-    <div className="space-y-6">
+  // 3. Nếu là Object (JSON chuẩn), render ra Table
+  if (typeof parsedSpecs === 'object' && !Array.isArray(parsedSpecs)) {
+    return (
       <div className="rounded-xl border border-border overflow-hidden">
-        <table className="w-full text-sm">
+        <table className="w-full text-sm border-collapse">
           <tbody>
-            {specEntries.map(([key, value], index) => (
-              <tr
-                key={index}
-                className={cn(
-                  index % 2 === 0 ? 'bg-muted/40' : 'bg-background',
-                  'transition-colors hover:bg-accent/5'
-                )}
-              >
-                <td className="px-4 py-4 font-semibold text-muted-foreground w-1/3 border-r border-border capitalize">
-                  {key}
-                </td>
-                <td className="px-4 py-4 text-foreground font-medium">
-                  {String(value)}
-                </td>
+            {Object.entries(parsedSpecs).map(([key, value]) => (
+              <tr key={key} className="border-b border-border hover:bg-accent/5 transition-colors">
+                <td className="py-3 px-4 font-medium text-muted-foreground w-1/3 align-top border-r border-border capitalize">{key}</td>
+                <td className="py-3 px-4 text-foreground font-medium leading-relaxed">{String(value)}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-    </div>
-  );
+    );
+  }
+
+  // Fallback cuối cùng
+  return <p>Dữ liệu không đúng định dạng.</p>;
 }
 
 // ============================================
