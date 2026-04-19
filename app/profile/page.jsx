@@ -13,8 +13,17 @@ import {
 } from '@/lib/voucherService';
 import useAuthStore from '@/store/authStore';
 import {
+  createProduct,
+  deleteProduct,
+  getAllProducts,
+  updateProduct,
+  uploadProductImage,
+} from '@/lib/productService';
+import {
   Check,
   ClipboardCopy,
+  Edit,
+  Image as ImageIcon,
   LogOut,
   Package,
   Plus,
@@ -25,6 +34,7 @@ import {
   Trash2,
   User,
   X,
+  Loader2
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
@@ -154,47 +164,146 @@ export default function ProfilePage() {
 // Tab: Thông tin cá nhân
 // ============================================================
 function TabInfo({ user }) {
-  return (
-    <div className="max-w-2xl">
-      <div className="rounded-2xl border border-border bg-card p-6 space-y-5">
-        <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
-          <User className="h-5 w-5 text-accent" />
-          Thông tin tài khoản
-        </h2>
+  const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [toast, setToast] = useState(null);
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <InfoField label="Email" value={user.email} />
-          <InfoField
-            label="Họ và tên"
-            value={user.user_metadata?.full_name || 'Chưa cập nhật'}
-          />
-          <InfoField
-            label="Ngày tạo tài khoản"
-            value={
-              user.created_at
-                ? new Date(user.created_at).toLocaleDateString('vi-VN', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric',
-                  })
-                : '—'
-            }
-          />
-          <InfoField
-            label="Đăng nhập lần cuối"
-            value={
-              user.last_sign_in_at
-                ? new Date(user.last_sign_in_at).toLocaleDateString('vi-VN', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })
-                : '—'
-            }
-          />
+  const [formData, setFormData] = useState({
+    full_name: user?.user_metadata?.full_name || '',
+    phone: user?.user_metadata?.phone || '',
+    address: user?.user_metadata?.address || '',
+    dob: user?.user_metadata?.dob || '',
+    gender: user?.user_metadata?.gender || 'other',
+  });
+
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+  };
+
+  const handleSave = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.auth.updateUser({
+        data: formData,
+      });
+      if (error) throw error;
+
+      useAuthStore.setState({ user: data.user });
+      setIsEditing(false);
+      showToast('Cập nhật thông tin thành công!', 'success');
+    } catch (error) {
+      console.error(error);
+      showToast('Có lỗi xảy ra, vui lòng thử lại', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="max-w-2xl space-y-4">
+      {toast && (
+        <div
+          className={`p-3 rounded-xl text-sm font-medium border-2 animate-in slide-in-from-top fade-in duration-200 ${
+            toast.type === 'success'
+              ? 'bg-success/10 text-success border-success/30'
+              : 'bg-destructive/10 text-destructive border-destructive/30'
+          }`}
+        >
+          {toast.message}
         </div>
+      )}
+
+      <div className="rounded-2xl border border-border bg-card p-6 space-y-5">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+            <User className="h-5 w-5 text-accent" />
+            Thông tin tài khoản
+          </h2>
+          {!isEditing && (
+            <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+              Chỉnh sửa
+            </Button>
+          )}
+        </div>
+
+        {isEditing ? (
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Họ và tên</label>
+                <input
+                  type="text"
+                  value={formData.full_name}
+                  onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                  className="w-full h-10 px-3 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Số điện thoại</label>
+                <input
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  className="w-full h-10 px-3 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                />
+              </div>
+              <div className="space-y-1 sm:col-span-2">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Địa chỉ</label>
+                <input
+                  type="text"
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  className="w-full h-10 px-3 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Ngày sinh</label>
+                <input
+                  type="date"
+                  value={formData.dob}
+                  onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
+                  className="w-full h-10 px-3 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Giới tính</label>
+                <select
+                  value={formData.gender}
+                  onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                  className="w-full h-10 px-3 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                >
+                  <option value="male">Nam</option>
+                  <option value="female">Nữ</option>
+                  <option value="other">Khác</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex gap-2 justify-end pt-4 border-t border-border">
+              <Button variant="ghost" onClick={() => setIsEditing(false)} disabled={loading}>
+                Hủy
+              </Button>
+              <Button onClick={handleSave} disabled={loading} className="bg-accent text-accent-foreground hover:bg-accent/90">
+                {loading ? 'Đang lưu...' : 'Lưu lại'}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <InfoField label="Email" value={user.email} />
+            <InfoField label="Họ và tên" value={user.user_metadata?.full_name || '—'} />
+            <InfoField label="Số điện thoại" value={user.user_metadata?.phone || '—'} />
+            <InfoField label="Ngày sinh" value={user.user_metadata?.dob ? new Date(user.user_metadata.dob).toLocaleDateString('vi-VN') : '—'} />
+            <InfoField label="Giới tính" value={user.user_metadata?.gender === 'male' ? 'Nam' : user.user_metadata?.gender === 'female' ? 'Nữ' : user.user_metadata?.gender === 'other' ? 'Khác' : '—'} />
+            <InfoField label="Địa chỉ" value={user.user_metadata?.address || '—'} />
+          </div>
+        )}
       </div>
     </div>
   );
@@ -239,28 +348,7 @@ function TabAdmin() {
       {/* Main Content — 2 cột */}
       <div className="xl:col-span-2 space-y-6">
         {/* CRUD Sản phẩm */}
-        <div className="rounded-2xl border border-border bg-card p-6">
-          <h2 className="text-lg font-bold text-foreground flex items-center gap-2 mb-4">
-            <Settings className="h-5 w-5 text-accent" />
-            Quản lý sản phẩm
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {['Thêm sản phẩm', 'Sửa sản phẩm', 'Xoá sản phẩm', 'Danh sách SP'].map(
-              (label) => (
-                <button
-                  key={label}
-                  className="flex flex-col items-center gap-2 p-4 rounded-xl border border-border bg-muted/30 hover:bg-muted/60 transition-all text-sm font-medium text-foreground"
-                >
-                  <Package className="h-5 w-5 text-accent" />
-                  {label}
-                </button>
-              )
-            )}
-          </div>
-          <p className="text-xs text-muted-foreground mt-3">
-            * Tính năng CRUD sản phẩm đang được phát triển.
-          </p>
-        </div>
+        <ProductAdmin />
 
         {/* Quản lý Voucher — Bảng */}
         <VoucherTable />
@@ -627,6 +715,377 @@ function VoucherSidebar() {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+// ============================================================
+// Product Admin — Bảng quản lý Sản phẩm (CRUD)
+// ============================================================
+function ProductAdmin() {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [toast, setToast] = useState(null);
+
+  const [formData, setFormData] = useState({
+    title: '',
+    category: 'dien-thoai',
+    price: '',
+    original_price: '',
+    description: '',
+    image: '',
+    specs: '{}',
+  });
+  
+  const [fileToUpload, setFileToUpload] = useState(null);
+
+  const loadProducts = useCallback(async () => {
+    setLoading(true);
+    const data = await getAllProducts();
+    setProducts(data);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    loadProducts();
+  }, [loadProducts]);
+
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
+  const showToastMsg = (message, type = 'success') => {
+    setToast({ message, type });
+  };
+
+  const handleOpenModal = (product = null) => {
+    if (product) {
+      setEditingId(product.id);
+      setFormData({
+        title: product.title || product.name || '',
+        category: product.categoryOriginal || product.category || 'dien-thoai',
+        price: product.price || '',
+        original_price: product.originalPrice || product.oldPrice || '',
+        description: product.description || '',
+        image: product.image || '',
+        specs: typeof product.specs === 'object' ? JSON.stringify(product.specs, null, 2) : (product.specs || '{}'),
+      });
+    } else {
+      setEditingId(null);
+      setFormData({
+        title: '',
+        category: 'dien-thoai',
+        price: '',
+        original_price: '',
+        description: '',
+        image: '',
+        specs: '{}',
+      });
+    }
+    setFileToUpload(null);
+    setShowModal(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (!confirm('Bạn chắc chắn muốn xoá sản phẩm này? Vị trí ảnh hưởng không thể khôi phục.')) return;
+    try {
+      await deleteProduct(id);
+      showToastMsg('Đã xoá sản phẩm thành công');
+      loadProducts();
+    } catch (error) {
+      showToastMsg('Lỗi khi xoá sản phẩm', 'error');
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      let finalImageUrl = formData.image;
+
+      if (fileToUpload) {
+        try {
+          finalImageUrl = await uploadProductImage(fileToUpload);
+        } catch (uploadError) {
+          showToastMsg('Lỗi upload ảnh', 'error');
+          setSubmitting(false);
+          return;
+        }
+      }
+
+      const payload = {
+        title: formData.title,
+        name: formData.title,
+        slug: formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, ''),
+        category: formData.category,
+        price: Number(formData.price),
+        original_price: formData.original_price ? Number(formData.original_price) : null,
+        description: formData.description,
+        image: finalImageUrl,
+        specs: formData.specs, // Save as string
+      };
+
+      if (editingId) {
+        await updateProduct(editingId, payload);
+        showToastMsg('Cập nhật sản phẩm thành công');
+      } else {
+        await createProduct(payload);
+        showToastMsg('Thêm sản phẩm thành công');
+      }
+      setShowModal(false);
+      loadProducts();
+    } catch (error) {
+      showToastMsg('Lỗi lưu sản phẩm', 'error');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="rounded-2xl border border-border bg-card p-6">
+      {toast && (
+        <div
+          className={`fixed bottom-5 right-5 z-[100] p-3 px-5 rounded-xl text-sm font-medium border-2 shadow-xl animate-in slide-in-from-bottom fade-in duration-200 ${
+            toast.type === 'success'
+              ? 'bg-card text-success border-success/30'
+              : 'bg-card text-destructive border-destructive/30'
+          }`}
+        >
+          {toast.message}
+        </div>
+      )}
+
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+          <Settings className="h-5 w-5 text-accent" />
+          Quản lý sản phẩm
+        </h2>
+        <Button size="sm" onClick={() => handleOpenModal()} className="gap-1.5 h-9 bg-accent hover:bg-accent/90 text-accent-foreground font-bold">
+          <Plus className="h-4 w-4" /> Thêm SP
+        </Button>
+      </div>
+
+      {loading ? (
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+             <div key={i} className="h-16 rounded-lg bg-muted animate-pulse" />
+          ))}
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="text-left py-2.5 px-3 font-semibold text-muted-foreground w-16">Ảnh</th>
+                <th className="text-left py-2.5 px-3 font-semibold text-muted-foreground">Sản phẩm</th>
+                <th className="text-left py-2.5 px-3 font-semibold text-muted-foreground">Danh mục</th>
+                <th className="text-right py-2.5 px-3 font-semibold text-muted-foreground">Giá bán</th>
+                <th className="text-right py-2.5 px-3 font-semibold text-muted-foreground">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              {products.map((p) => (
+                <tr key={p.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                  <td className="py-2 px-3">
+                    <div className="h-10 w-10 rounded-md bg-muted overflow-hidden">
+                      {p.image ? (
+                        <img src={p.image} alt={p.title} className="h-full w-full object-cover" />
+                      ) : (
+                        <ImageIcon className="h-4 w-4 text-muted-foreground m-auto mt-3" />
+                      )}
+                    </div>
+                  </td>
+                  <td className="py-2 px-3">
+                    <div className="font-semibold text-foreground line-clamp-1">{p.title}</div>
+                    <div className="text-xs text-muted-foreground line-clamp-1">{p.slug}</div>
+                  </td>
+                  <td className="py-2 px-3 text-foreground">{p.categoryOriginal || p.category}</td>
+                  <td className="py-2 px-3 text-right font-bold text-destructive">
+                    {Number(p.price).toLocaleString('vi-VN')}đ
+                  </td>
+                  <td className="py-2 px-3 text-right">
+                    <div className="flex items-center justify-end gap-1">
+                      <button
+                        onClick={() => handleOpenModal(p)}
+                        className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-accent transition-colors"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(p.id)}
+                        className="p-1.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {products.length === 0 && (
+                <tr>
+                  <td colSpan="5" className="py-8 text-center text-muted-foreground">Chưa có sản phẩm nào.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Modal CRUD */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-card w-full max-w-2xl rounded-2xl border border-border shadow-2xl flex flex-col max-h-[90vh]">
+            <div className="flex items-center justify-between p-4 border-b border-border">
+              <h3 className="text-lg font-bold flex items-center gap-2">
+                {editingId ? <Edit className="h-5 w-5 text-accent" /> : <Plus className="h-5 w-5 text-accent" />}
+                {editingId ? 'Cập nhật sản phẩm' : 'Thêm sản phẩm mới'}
+              </h3>
+              <button
+                onClick={() => setShowModal(false)}
+                className="p-1.5 hover:bg-muted rounded-lg transition-colors text-muted-foreground"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="p-4 overflow-y-auto flex-1">
+              <form id="productForm" onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Tên sản phẩm *</label>
+                    <input
+                      required
+                      type="text"
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      className="w-full h-10 px-3 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Danh mục *</label>
+                    <select
+                      required
+                      value={formData.category}
+                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                      className="w-full h-10 px-3 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                    >
+                      <option value="dien-thoai">Điện thoại</option>
+                      <option value="may-tinh-bang">Máy tính bảng</option>
+                      <option value="laptop">Laptop & PC</option>
+                      <option value="tivi">Tivi</option>
+                      <option value="gia-dung">Đồ gia dụng</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Giá bán (VNĐ) *</label>
+                    <input
+                      required
+                      type="number"
+                      min={0}
+                      value={formData.price}
+                      onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                      className="w-full h-10 px-3 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Giá gốc (nếu có giảm giá)</label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={formData.original_price}
+                      onChange={(e) => setFormData({ ...formData, original_price: e.target.value })}
+                      className="w-full h-10 px-3 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Hình ảnh sản phẩm</label>
+                  
+                  <div className="flex gap-4 items-start">
+                    <div className="h-20 w-20 shrink-0 rounded-lg border-2 border-dashed border-border overflow-hidden bg-muted flex items-center justify-center">
+                      {(fileToUpload || formData.image) ? (
+                        <img 
+                          src={fileToUpload ? URL.createObjectURL(fileToUpload) : formData.image} 
+                          alt="preview" 
+                          className="h-full w-full object-cover" 
+                        />
+                      ) : (
+                        <ImageIcon className="h-6 w-6 text-muted-foreground/50" />
+                      )}
+                    </div>
+                    
+                    <div className="flex-1 space-y-2">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            setFileToUpload(e.target.files[0]);
+                          }
+                        }}
+                        className="text-sm file:mr-4 file:py-1.5 file:px-4 file:rounded-full file:border-0 file:bg-accent/10 file:text-accent file:font-semibold hover:file:bg-accent/20 transition-colors w-full"
+                      />
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground font-medium">Hoặc URL ảnh:</span>
+                        <input
+                          type="url"
+                          placeholder="https://..."
+                          value={formData.image}
+                          onChange={(e) => {
+                              setFormData({ ...formData, image: e.target.value });
+                              setFileToUpload(null); 
+                          }}
+                          className="flex-1 h-8 px-2 rounded-md border border-input bg-background text-xs focus:outline-none focus:ring-1 focus:ring-accent"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Thông số kỹ thuật (JSON format)</label>
+                  <textarea
+                    rows={4}
+                    value={formData.specs}
+                    onChange={(e) => setFormData({ ...formData, specs: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border border-input bg-background font-mono text-xs focus:outline-none focus:ring-2 focus:ring-accent"
+                    placeholder='{"cpu": "Apple M1", "ram": "8GB"}'
+                  />
+                  <p className="text-[10px] text-muted-foreground">Phải là chuỗi JSON hợp lệ. VD: `{"màn hình": "6.1 inch", "chip": "Apple A15"}`</p>
+                </div>
+                
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Mô tả tóm tắt</label>
+                  <textarea
+                    rows={3}
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                  />
+                </div>
+              </form>
+            </div>
+            
+            <div className="p-4 border-t border-border flex justify-end gap-3 bg-muted/20">
+              <Button type="button" variant="ghost" onClick={() => setShowModal(false)} disabled={submitting}>
+                Huỷ
+              </Button>
+              <Button form="productForm" type="submit" disabled={submitting} className="bg-accent text-accent-foreground hover:bg-accent/90 px-6 font-bold shadow-md">
+                {submitting ? (
+                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Đang lưu...</>
+                ) : 'Lưu sản phẩm'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
