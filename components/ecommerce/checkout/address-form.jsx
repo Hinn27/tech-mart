@@ -31,7 +31,7 @@ export function AddressForm() {
         <div className="flex items-center gap-2">
           <Button type="button" variant="outline" size="sm" className="gap-2" onClick={handleAddClick}>
             <Plus className="h-4 w-4" />
-            Thêm
+            Thêm địa chỉ mới
           </Button>
           <Button type="button" variant="outline" size="sm" className="gap-2" onClick={() => setIsEditing((prev) => !prev)}>
             <Pencil className="h-4 w-4" />

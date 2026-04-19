@@ -20,7 +20,7 @@ export const metadata = {
   description: 'Mua sắm điện thoại, laptop, tablet, tivi và đồ gia dụng chính hãng với giá tốt nhất. Giao hàng nhanh, bảo hành uy tín.',
   keywords: 'điện thoại, laptop, tablet, tivi, đồ gia dụng, mua sắm online, điện tử',
   authors: [{ name: 'TechElite' }],
-  generator: 'v0.app',
+  //generator: 'v0.app',
   icons: {
     icon: [
       {
