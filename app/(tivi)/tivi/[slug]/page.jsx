@@ -2,6 +2,8 @@ import { fetchProductDetailPage } from '@/lib/productDetailService';
 import { getProductsByCategory } from '@/lib/productService';
 import ProductDetailClient from './product-detail-client';
 
+export const revalidate = 0;
+
 export async function generateStaticParams() {
   const products = await getProductsByCategory('tivi');
   return products.map((p) => ({ slug: p.slug }));

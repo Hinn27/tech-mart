@@ -107,7 +107,9 @@ export function ProductInfo({
       {/* ======================== */}
       <div className="space-y-3">
         <h1 className="text-2xl md:text-3xl lg:text-[2rem] font-bold leading-tight text-slate-900 dark:text-white">
-          {product.title || product.name} {selectedVariant.storage} — {selectedColor.name}
+          {product.title || product.name}
+          {selectedVariant.storage && selectedVariant.storage !== 'Mặc định' && ` ${selectedVariant.storage}`}
+          {selectedColor.name && selectedColor.name !== 'Mặc định' && ` — ${selectedColor.name}`}
         </h1>
 
         {/* Số sao vàng + Số đánh giá */}
@@ -170,18 +172,22 @@ export function ProductInfo({
       {/* ======================== */}
       <div className="space-y-5">
         {/* Dung lượng — Button Group */}
-        <StorageSelector
-          variants={product.variants}
-          selectedId={selectedVariant.id}
-          onSelect={onVariantChange}
-        />
+        {product.variants && product.variants.length > 0 && product.variants[0].storage !== 'Mặc định' && (
+          <StorageSelector
+            variants={product.variants}
+            selectedId={selectedVariant.id}
+            onSelect={onVariantChange}
+          />
+        )}
 
         {/* Màu sắc — Color Swatches (Tròn có mã màu + dấu tick) */}
-        <ColorSelector
-          colors={product.colors}
-          selectedId={selectedColor.id}
-          onSelect={onColorChange}
-        />
+        {product.colors && product.colors.length > 0 && product.colors[0].name !== 'Mặc định' && (
+          <ColorSelector
+            colors={product.colors}
+            selectedId={selectedColor.id}
+            onSelect={onColorChange}
+          />
+        )}
       </div>
 
       {/* ======================== */}

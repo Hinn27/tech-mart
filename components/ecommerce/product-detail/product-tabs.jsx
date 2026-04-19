@@ -119,22 +119,23 @@ function HighlightsTab({ content }) {
 }
 
 function SpecificationsTab({ specs }) {
+  if (!specs) return null;
+
   let parsedSpecs = {};
-  try {
-    parsedSpecs = typeof specs === 'string' ? JSON.parse(specs) : (specs || {});
-  } catch (e) {
-    parsedSpecs = {};
+  if (typeof specs === 'string') {
+    try {
+      parsedSpecs = JSON.parse(specs);
+    } catch (e) {
+      console.error('Error parsing specs:', e);
+      return null;
+    }
+  } else if (typeof specs === 'object') {
+    parsedSpecs = specs;
   }
 
   const specEntries = Object.entries(parsedSpecs);
 
-  if (specEntries.length === 0) {
-    return (
-      <div className="py-12 text-center text-muted-foreground italic">
-        Sản phẩm này hiện chưa có thông số kỹ thuật chi tiết.
-      </div>
-    );
-  }
+  if (specEntries.length === 0) return null;
 
   return (
     <div className="space-y-6">
