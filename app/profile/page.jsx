@@ -1,5 +1,17 @@
 'use client';
 
+import {
+  Bar,
+  BarChart,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip as RechartsTooltip,
+  XAxis,
+  YAxis
+} from 'recharts';
+
 import { AuthModal } from '@/components/ecommerce/auth-modal';
 import { Footer } from '@/components/ecommerce/footer';
 import { Header } from '@/components/ecommerce/header';
@@ -910,6 +922,80 @@ function ProductAdmin() {
           {toast.message}
         </div>
       )}
+
+      {/* ======================= */}
+      {/* Biểu đồ Thống kê Dashboard */}
+      {/* ======================= */}
+      <div className="mb-8">
+        <h2 className="text-lg font-bold text-foreground mb-4">Tổng quan Doanh thu</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Biểu đồ khối - Doanh thu 6 tháng */}
+          <div className="p-4 rounded-xl border border-border bg-card/50 shadow-sm">
+            <h3 className="text-sm font-semibold text-muted-foreground mb-4 text-center">Doanh thu 6 tháng gần nhất</h3>
+            {typeof window !== 'undefined' && (
+              <div className="h-[250px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={[
+                    { name: 'Tháng 10', 'Doanh thu': 1200000000 },
+                    { name: 'Tháng 11', 'Doanh thu': 1450000000 },
+                    { name: 'Tháng 12', 'Doanh thu': 980000000 },
+                    { name: 'Tháng 1', 'Doanh thu': 1800000000 },
+                    { name: 'Tháng 2', 'Doanh thu': 1100000000 },
+                    { name: 'Tháng 3', 'Doanh thu': 2150000000 },
+                  ]}>
+                    <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
+                    <YAxis 
+                      hide
+                    />
+                    <RechartsTooltip 
+                      formatter={(value) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value)}
+                      contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                      cursor={{ fill: 'rgba(0,0,0,0.05)' }}
+                    />
+                    <Bar dataKey="Doanh thu" fill="hsl(var(--accent))" radius={[4, 4, 0, 0]} barSize={40} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </div>
+
+          {/* Biểu đồ tròn - Tỉ lệ danh mục */}
+          <div className="p-4 rounded-xl border border-border bg-card/50 shadow-sm">
+            <h3 className="text-sm font-semibold text-muted-foreground mb-4 text-center">Tỉ lệ bán ra theo danh mục</h3>
+            {typeof window !== 'undefined' && (
+              <div className="h-[250px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={[
+                        { name: 'Điện thoại', value: 45 },
+                        { name: 'Laptop', value: 25 },
+                        { name: 'Tablet', value: 15 },
+                        { name: 'Tivi', value: 10 },
+                        { name: 'Gia dụng', value: 5 },
+                      ]}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'].map((color, index) => (
+                        <Cell key={`cell-${index}`} fill={color} />
+                      ))}
+                    </Pie>
+                    <RechartsTooltip 
+                      formatter={(value) => `${value}%`}
+                      contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <h2 className="text-lg font-bold text-foreground flex items-center gap-2">

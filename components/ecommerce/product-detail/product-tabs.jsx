@@ -126,10 +126,11 @@ function SpecificationsTab({ specs }) {
     try {
       parsedSpecs = JSON.parse(specs);
     } catch (e) {
-      console.error('Error parsing specs:', e);
-      return null;
+      if (specs.trim()) {
+        parsedSpecs = { "Thông tin": specs };
+      }
     }
-  } else if (typeof specs === 'object') {
+  } else if (typeof specs === 'object' && specs !== null) {
     parsedSpecs = specs;
   }
 
