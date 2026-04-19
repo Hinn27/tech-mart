@@ -856,7 +856,6 @@ function ProductAdmin() {
 
       const payload = {
         title: formData.title,
-        name: formData.title,
         slug: formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, ''),
         category: formData.category,
         price: Number(formData.price),
