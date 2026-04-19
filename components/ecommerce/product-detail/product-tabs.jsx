@@ -53,7 +53,7 @@ export function ProductTabs({ product }) {
           <HighlightsTab content={product.highlights} />
         )}
         {activeTab === 'specs' && (
-          <SpecificationsTab specifications={product.specifications} />
+          <SpecificationsTab specs={product.specs} />
         )}
         {activeTab === 'reviews' && (
           <ReviewsTab
@@ -118,52 +118,48 @@ function HighlightsTab({ content }) {
   );
 }
 
-// ============================================
-// Tab 2: Thông số kỹ thuật - Table sọc ngựa vằn
-// ============================================
-function SpecificationsTab({
-  specifications,
-}) {
-  return (
-    <div className="space-y-8">
-      {specifications.map((section, sectionIndex) => (
-        <div key={sectionIndex}>
-          {/* Tiêu đề nhóm */}
-          <h3 className="text-base font-bold text-foreground mb-3 flex items-center gap-2">
-            <span className="h-1 w-4 rounded-full bg-accent" />
-            {section.category}
-          </h3>
+function SpecificationsTab({ specs }) {
+  let parsedSpecs = {};
+  try {
+    parsedSpecs = typeof specs === 'string' ? JSON.parse(specs) : (specs || {});
+  } catch (e) {
+    parsedSpecs = {};
+  }
 
-          {/* Table sọc ngựa vằn - chi tiết CPU, RAM, Màn hình */}
-          <div className="rounded-xl border border-border overflow-hidden">
-            <table className="w-full text-sm">
-              <tbody>
-                {section.specs.map((spec, specIndex) => (
-                  <tr
-                    key={specIndex}
-                    className={cn(
-                      // Sọc ngựa vằn: xen kẽ màu nền
-                      specIndex % 2 === 0
-                        ? 'bg-muted/60'
-                        : 'bg-background',
-                      'transition-colors hover:bg-accent/5'
-                    )}
-                  >
-                    {/* Tên thông số */}
-                    <td className="px-4 py-3.5 text-sm font-semibold text-muted-foreground w-2/5 border-r border-border align-top">
-                      {spec.label}
-                    </td>
-                    {/* Giá trị */}
-                    <td className="px-4 py-3.5 text-sm text-foreground font-medium">
-                      {spec.value}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      ))}
+  const specEntries = Object.entries(parsedSpecs);
+
+  if (specEntries.length === 0) {
+    return (
+      <div className="py-12 text-center text-muted-foreground italic">
+        Sản phẩm này hiện chưa có thông số kỹ thuật chi tiết.
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="rounded-xl border border-border overflow-hidden">
+        <table className="w-full text-sm">
+          <tbody>
+            {specEntries.map(([key, value], index) => (
+              <tr
+                key={index}
+                className={cn(
+                  index % 2 === 0 ? 'bg-muted/40' : 'bg-background',
+                  'transition-colors hover:bg-accent/5'
+                )}
+              >
+                <td className="px-4 py-4 font-semibold text-muted-foreground w-1/3 border-r border-border capitalize">
+                  {key}
+                </td>
+                <td className="px-4 py-4 text-foreground font-medium">
+                  {String(value)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
