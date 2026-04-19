@@ -16,7 +16,7 @@ const shippingOptions = [
   },
   {
     id: 'express',
-    name: 'Giao Tên Lửa 2h',
+    name: 'Giao Hàng Nhanh',
     description: 'Giao hàng siêu tốc trong vòng 2 giờ',
     price: 50000,
     estimatedDays: '2 giờ',

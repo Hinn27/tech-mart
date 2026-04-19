@@ -9,6 +9,7 @@ import { formatPrice } from '@/lib/mock-data';
 import useAuthStore from '@/store/authStore';
 import useCartStore from '@/store/cartStore';
 import { useCallback, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 
 const ACCENT = '#FF5722';
 
@@ -16,15 +17,20 @@ export default function DienThoaiClient({ products = [] }) {
   const addToCart = useCartStore((state) => state.addToCart);
   const user = useAuthStore((state) => state.user);
   const openAuthModal = useAuthStore((state) => state.openAuthModal);
-  const signOut = useAuthStore((state) => state.signOut);
-      const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
   const [selectedBrand, setSelectedBrand] = useState('all');
   const [priceRange, setPriceRange] = useState('all');
   const [sortBy, setSortBy] = useState('popular');
 
   const handleAddToCart = useCallback((product) => {
+    if (!user) {
+      openAuthModal();
+      return;
+    }
+
     addToCart(product, 1);
-  }, [addToCart]);
+    toast.success('Đã thêm vào giỏ');
+  }, [addToCart, openAuthModal, user]);
 
   // Lọc theo thương hiệu
   const brands = [

@@ -2,60 +2,83 @@
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { fetchActiveVouchers } from '@/lib/voucherService';
 import { formatPrice } from '@/lib/mock-data';
+import { formatVoucherValue } from '@/lib/voucherUtils';
 import { cn } from '@/lib/utils';
 import useCartStore from '@/store/cartStore';
-import { Check, Loader2, ShoppingBag, Tag, X } from 'lucide-react';
+import useVoucherStore from '@/store/voucherStore';
+import { Check, Loader2, ShoppingBag, Tag, Ticket, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 export function OrderSummary({ shippingFee = 0, onPlaceOrder }) {
   const router = useRouter();
   const cart = useCartStore((state) => state.cart);
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const removeFromCart = useCartStore((state) => state.removeFromCart);
+
+  const appliedVoucher = useVoucherStore((state) => state.appliedVoucher);
+  const voucherError = useVoucherStore((state) => state.voucherError);
+  const applyVoucher = useVoucherStore((state) => state.applyVoucher);
+  const removeVoucher = useVoucherStore((state) => state.removeVoucher);
+  const clearVoucherError = useVoucherStore((state) => state.clearVoucherError);
+  const getDiscountAmount = useVoucherStore((state) => state.getDiscountAmount);
+
   const [couponCode, setCouponCode] = useState('');
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
-  const [appliedCoupon, setAppliedCoupon] = useState(null);
-  const [couponError, setCouponError] = useState('');
+  const [vouchers, setVouchers] = useState([]);
+  const [vouchersLoading, setVouchersLoading] = useState(true);
 
-  // Tính toán từ store thực tế
-  const subtotal = cart.reduce(
-    (sum, item) => sum + item.product.price * item.quantity,
-    0
+  const subtotal = useMemo(
+    () => cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0),
+    [cart]
   );
-  const discount = appliedCoupon?.discount || 0;
-  const total = subtotal + shippingFee - discount;
-  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const discount = getDiscountAmount(subtotal);
+  const total = Math.max(0, subtotal + shippingFee - discount);
+  const totalItems = useMemo(
+    () => cart.reduce((sum, item) => sum + item.quantity, 0),
+    [cart]
+  );
 
-  // Áp dụng mã giảm giá
-  const handleApplyCoupon = async () => {
-    if (!couponCode.trim()) return;
-
-    setIsApplyingCoupon(true);
-    setCouponError('');
-
-    // Mô phỏng gọi API
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    if (couponCode.toUpperCase() === 'SUMMER500') {
-      setAppliedCoupon({ code: couponCode.toUpperCase(), discount: 500000 });
-      setCouponCode('');
-    } else {
-      setCouponError('Mã giảm giá không hợp lệ hoặc đã hết hạn');
+  useEffect(() => {
+    async function loadVouchers() {
+      setVouchersLoading(true);
+      try {
+        const data = await fetchActiveVouchers();
+        setVouchers(data);
+      } catch (error) {
+        console.error('[OrderSummary] Lỗi tải voucher:', error);
+      } finally {
+        setVouchersLoading(false);
+      }
     }
 
+    loadVouchers();
+  }, []);
+
+  useEffect(() => {
+    if (!appliedVoucher) return;
+    setCouponCode(appliedVoucher.code);
+  }, [appliedVoucher]);
+
+  const handleApplyCoupon = async (code = couponCode) => {
+    setIsApplyingCoupon(true);
+    clearVoucherError();
+    const result = applyVoucher(code, vouchers, subtotal);
+    if (result.success) {
+      setCouponCode(result.voucher.code);
+    }
     setIsApplyingCoupon(false);
   };
 
-  const handleRemoveCoupon = () => {
-    setAppliedCoupon(null);
-    setCouponError('');
+  const handlePlaceOrder = () => {
+    onPlaceOrder?.();
+    router.push('/dat-hang-thanh-cong');
   };
 
   return (
     <div className="sticky top-20 rounded-2xl border border-border bg-card p-6 shadow-sm">
-      {/* ===== Header ===== */}
       <div className="flex items-center gap-2.5 pb-4 border-b border-border">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/10">
           <ShoppingBag className="h-4 w-4 text-accent" />
@@ -66,11 +89,9 @@ export function OrderSummary({ shippingFee = 0, onPlaceOrder }) {
         </span>
       </div>
 
-      {/* ===== Giỏ hàng thu gọn — Danh sách dọc ===== */}
       <div className="py-4 space-y-4 max-h-[280px] overflow-y-auto pr-1">
         {cart.map((item) => (
           <div key={`${item.product.id}-${item.category}`} className="flex gap-3">
-            {/* Ảnh thumbnail nhỏ xíu */}
             <div className="relative h-14 w-14 shrink-0 rounded-lg overflow-hidden bg-muted border border-border">
               <img
                 src={item.product.image || '/placeholder.jpg'}
@@ -80,7 +101,6 @@ export function OrderSummary({ shippingFee = 0, onPlaceOrder }) {
               />
             </div>
 
-            {/* Info — tên ngắn gọn, màu sắc, số lượng, đơn giá */}
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground line-clamp-1 truncate">
                 {item.product.name}
@@ -125,103 +145,116 @@ export function OrderSummary({ shippingFee = 0, onPlaceOrder }) {
         ))}
       </div>
 
-      {/* ===== Mã giảm giá — Input + Nút Áp dụng ===== */}
       <div className="py-4 border-t border-border">
         <div className="flex items-center gap-2 mb-3">
           <Tag className="h-4 w-4 text-accent" />
           <span className="text-sm font-medium text-foreground">Mã giảm giá</span>
         </div>
 
-        {appliedCoupon ? (
-          <div className="flex items-center justify-between rounded-lg bg-success/10 border border-success/20 px-3 py-2.5">
-            <div className="flex items-center gap-2">
-              <Check className="h-4 w-4 text-success flex-shrink-0" />
-              <span className="text-sm font-bold text-success">{appliedCoupon.code}</span>
-              <span className="text-sm text-success">
-                (-{formatPrice(appliedCoupon.discount)})
-              </span>
+        {appliedVoucher ? (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between rounded-lg bg-success/10 border border-success/20 px-3 py-2.5">
+              <div className="flex items-center gap-2 min-w-0">
+                <Check className="h-4 w-4 text-success flex-shrink-0" />
+                <span className="text-sm font-bold text-success">{appliedVoucher.code}</span>
+                <span className="text-sm text-success truncate">
+                  (-{formatVoucherValue(appliedVoucher)})
+                </span>
+              </div>
+              <button
+                onClick={removeVoucher}
+                className="p-1 rounded-md hover:bg-success/20 text-muted-foreground hover:text-destructive transition-colors"
+                aria-label="Xóa mã giảm giá"
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
-            <button
-              onClick={handleRemoveCoupon}
-              className="p-1 rounded-md hover:bg-success/20 text-muted-foreground hover:text-destructive transition-colors"
-              aria-label="Xóa mã giảm giá"
-            >
-              <X className="h-4 w-4" />
-            </button>
+            <div className="flex gap-2">
+              <Input
+                placeholder="Đổi mã giảm giá"
+                value={couponCode}
+                onChange={(e) => {
+                  setCouponCode(e.target.value.toUpperCase());
+                  clearVoucherError();
+                }}
+                className="h-11 text-sm font-mono"
+              />
+              <Button
+                variant="outline"
+                onClick={() => handleApplyCoupon(couponCode)}
+                disabled={isApplyingCoupon || !couponCode.trim()}
+                className="h-11 px-4 text-sm font-medium shrink-0"
+              >
+                {isApplyingCoupon ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Đổi mã'}
+              </Button>
+            </div>
           </div>
         ) : (
-          <div className="flex gap-2">
-            <Input
-              placeholder="Nhập mã giảm giá"
-              value={couponCode}
-              onChange={(e) => {
-                setCouponCode(e.target.value);
-                setCouponError('');
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleApplyCoupon();
-              }}
-              className={cn(
-                'h-11 text-sm',
-                couponError && 'border-destructive focus-visible:ring-destructive'
-              )}
-            />
-            <Button
-              variant="outline"
-              onClick={handleApplyCoupon}
-              disabled={isApplyingCoupon || !couponCode.trim()}
-              className="h-11 px-4 text-sm font-medium shrink-0"
-            >
-              {isApplyingCoupon ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                'Áp dụng'
-              )}
-            </Button>
+          <div className="space-y-3">
+            <div className="flex gap-2">
+              <Input
+                placeholder="Nhập mã giảm giá"
+                value={couponCode}
+                onChange={(e) => {
+                  setCouponCode(e.target.value.toUpperCase());
+                  clearVoucherError();
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleApplyCoupon();
+                }}
+                className={cn('h-11 text-sm font-mono', voucherError && 'border-destructive focus-visible:ring-destructive')}
+              />
+              <Button
+                variant="outline"
+                onClick={() => handleApplyCoupon()}
+                disabled={isApplyingCoupon || !couponCode.trim()}
+                className="h-11 px-4 text-sm font-medium shrink-0"
+              >
+                {isApplyingCoupon ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Áp dụng'}
+              </Button>
+            </div>
+
+            {!vouchersLoading && vouchers.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {vouchers.slice(0, 4).map((voucher) => (
+                  <button
+                    key={voucher.id}
+                    type="button"
+                    onClick={() => {
+                      setCouponCode(voucher.code);
+                      handleApplyCoupon(voucher.code);
+                    }}
+                    className="inline-flex items-center gap-1 rounded-full border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground hover:border-accent hover:text-accent transition-colors"
+                  >
+                    <Ticket className="h-3.5 w-3.5" />
+                    {voucher.code} · {formatVoucherValue(voucher)}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
-        {couponError && (
+        {voucherError && (
           <p className="mt-2 text-xs text-destructive font-medium" role="alert">
-            {couponError}
-          </p>
-        )}
-
-        {!appliedCoupon && (
-          <p className="mt-2 text-xs text-muted-foreground">
-            Thử mã:{' '}
-            <button
-              onClick={() => setCouponCode('SUMMER500')}
-              className="font-medium text-accent hover:underline"
-            >
-              SUMMER500
-            </button>
+            {voucherError}
           </p>
         )}
       </div>
 
-      {/* ===== Bảng tính tiền ===== */}
       <div className="py-4 border-t border-border space-y-3">
-        {/* Tạm tính */}
         <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">Tạm tính</span>
           <span className="font-medium text-foreground">{formatPrice(subtotal)}</span>
         </div>
 
-        {/* Phí vận chuyển */}
         <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">Phí vận chuyển</span>
-          <span
-            className={cn(
-              'font-medium',
-              shippingFee === 0 ? 'text-success' : 'text-foreground'
-            )}
-          >
+          <span className={cn('font-medium', shippingFee === 0 ? 'text-success' : 'text-foreground')}>
             {shippingFee === 0 ? 'Miễn phí' : formatPrice(shippingFee)}
           </span>
         </div>
 
-        {/* Giảm giá */}
         {discount > 0 && (
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Giảm giá</span>
@@ -230,7 +263,6 @@ export function OrderSummary({ shippingFee = 0, onPlaceOrder }) {
         )}
       </div>
 
-      {/* ===== Dòng Tổng cộng — Chữ to, in đậm, màu nhấn ===== */}
       <div className="py-4 border-t border-border">
         <div className="flex items-center justify-between">
           <span className="text-base font-bold text-foreground">Tổng cộng</span>
@@ -243,15 +275,13 @@ export function OrderSummary({ shippingFee = 0, onPlaceOrder }) {
         </div>
       </div>
 
-      {/* ===== Nút HOÀN TẤT ĐẶT HÀNG — Khổng lồ, full-width ===== */}
       <Button
-        onClick={() => router.push('/dat-hang-thanh-cong')}
+        onClick={handlePlaceOrder}
         className="w-full h-14 text-base font-extrabold rounded-xl bg-destructive hover:bg-destructive/90 text-white shadow-lg shadow-destructive/20 transition-all active:scale-[0.98] tracking-wide"
       >
         HOÀN TẤT ĐẶT HÀNG
       </Button>
 
-      {/* Trust Badges */}
       <div className="mt-4 flex items-center justify-center gap-3 text-xs text-muted-foreground">
         <span className="flex items-center gap-1">
           <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

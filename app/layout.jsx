@@ -2,6 +2,7 @@ import { AuthProvider } from '@/components/auth-provider'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Analytics } from '@vercel/analytics/next'
 import { Geist_Mono, Inter } from 'next/font/google'
+import { Toaster } from 'sonner'
 import './globals.css'
 
 const inter = Inter({
@@ -62,6 +63,7 @@ export default function RootLayout({ children }) {
           disableTransitionOnChange
         >
           {children}
+          <Toaster position="top-right" richColors closeButton duration={2200} />
         </ThemeProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>

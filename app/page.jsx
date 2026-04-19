@@ -12,15 +12,14 @@ import { getProductsByCategory } from '@/lib/productService';
 import useAuthStore from '@/store/authStore';
 import useCartStore from '@/store/cartStore';
 import { useCallback, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 export const dynamic = 'force-dynamic';
 
 export default function HomePage() {
-  const cartCount = useCartStore((state) => state.getTotalItems());
-  const clearCart = useCartStore((state) => state.clearCart);
+  const addToCart = useCartStore((state) => state.addToCart);
   const user = useAuthStore((state) => state.user);
   const openAuthModal = useAuthStore((state) => state.openAuthModal);
-  const signOut = useAuthStore((state) => state.signOut);
 
   // Real data states
   const [phoneProducts, setPhoneProducts] = useState([]);
@@ -59,8 +58,14 @@ export default function HomePage() {
   }, []);
 
   const handleAddToCart = useCallback((product) => {
-    console.log('Đã thêm vào giỏ hàng:', product.name);
-  }, []);
+    if (!user) {
+      openAuthModal();
+      return;
+    }
+
+    addToCart(product, 1);
+    toast.success('Đã thêm vào giỏ');
+  }, [addToCart, openAuthModal, user]);
 
   // Build deal tabs from real data
   const dealTabs = [

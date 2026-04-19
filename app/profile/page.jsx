@@ -1,53 +1,56 @@
 'use client';
 
 import {
-  Bar,
-  BarChart,
-  Cell,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip as RechartsTooltip,
-  XAxis,
-  YAxis
+    Bar,
+    BarChart,
+    Cell,
+    Pie,
+    PieChart,
+    Tooltip as RechartsTooltip,
+    ResponsiveContainer,
+    XAxis,
+    YAxis
 } from 'recharts';
 
+import { AddressBookManager } from '@/components/ecommerce/address-book-manager';
 import { AuthModal } from '@/components/ecommerce/auth-modal';
 import { Footer } from '@/components/ecommerce/footer';
 import { Header } from '@/components/ecommerce/header';
 import { Button } from '@/components/ui/button';
+import {
+    createProduct,
+    deleteProduct,
+    getAllProducts,
+    updateProduct,
+    uploadProductImage,
+} from '@/lib/productService';
+import { getFlashSaleEndAt, upsertSiteSetting } from '@/lib/settingsService';
+import { slugifyProductTitle } from '@/lib/slug';
 import { supabase } from '@/lib/supabase';
 import {
-  createVoucher,
-  deleteVoucher,
-  fetchAllVouchers,
-  toggleVoucher,
-  updateVoucher,
+    createVoucher,
+    deleteVoucher,
+    fetchAllVouchers,
+    toggleVoucher,
+    updateVoucher,
 } from '@/lib/voucherService';
+import { formatVoucherValue } from '@/lib/voucherUtils';
 import useAuthStore from '@/store/authStore';
 import {
-  createProduct,
-  deleteProduct,
-  getAllProducts,
-  updateProduct,
-  uploadProductImage,
-} from '@/lib/productService';
-import {
-  Check,
-  ClipboardCopy,
-  Edit,
-  Image as ImageIcon,
-  LogOut,
-  Package,
-  Plus,
-  Settings,
-  ShieldCheck,
-  Tag,
-  Ticket,
-  Trash2,
-  User,
-  X,
-  Loader2
+    Check,
+    Edit,
+    Image as ImageIcon,
+    Loader2,
+    LogOut,
+    MapPin,
+    Package,
+    Plus,
+    Settings,
+    ShieldCheck,
+    Ticket,
+    Trash2,
+    User,
+    X
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
@@ -78,6 +81,7 @@ export default function ProfilePage() {
   const tabs = [
     { id: 'info', label: 'Thông tin cá nhân', icon: User },
     { id: 'orders', label: 'Đơn hàng', icon: Package },
+    { id: 'addresses', label: 'Sổ địa chỉ', icon: MapPin },
     ...(isAdmin
       ? [{ id: 'admin', label: 'Quản trị hệ thống', icon: ShieldCheck }]
       : []),
@@ -164,6 +168,7 @@ export default function ProfilePage() {
         {/* Tab Content */}
         {activeTab === 'info' && <TabInfo user={user} />}
         {activeTab === 'orders' && <TabOrders />}
+        {activeTab === 'addresses' && <TabAddresses />}
         {activeTab === 'admin' && isAdmin && <TabAdmin />}
       </main>
 
@@ -352,20 +357,96 @@ function TabOrders() {
   );
 }
 
+function TabAddresses() {
+  return (
+    <div className="max-w-5xl">
+      <AddressBookManager />
+    </div>
+  );
+}
+
 // ============================================================
 // Tab: Quản trị hệ thống (Admin Only)
 // ============================================================
 function TabAdmin() {
   return (
     <div className="grid grid-cols-1 gap-8">
-      {/* Nâng cấp khu vực hiển thị danh mục Product và Voucher */}
       <div className="space-y-6">
-        {/* CRUD Sản phẩm */}
+        <FlashSaleSettings />
         <ProductAdmin />
-
-        {/* Quản lý Voucher Đã Tái Cấu Trúc */}
         <VoucherAdmin />
       </div>
+    </div>
+  );
+}
+
+function FlashSaleSettings() {
+  const [value, setValue] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    async function loadSetting() {
+      setLoading(true);
+      try {
+        const currentValue = await getFlashSaleEndAt();
+        setValue(currentValue ? new Date(new Date(currentValue).getTime() - new Date(currentValue).getTimezoneOffset() * 60000).toISOString().slice(0, 16) : '');
+      } catch (error) {
+        setMessage(error.message || 'Không thể tải thời gian flash sale.');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadSetting();
+  }, []);
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    if (!value) {
+      setMessage('Vui lòng chọn thời gian kết thúc Flash Sale.');
+      return;
+    }
+
+    setSaving(true);
+    setMessage('');
+    try {
+      await upsertSiteSetting('flash_sale_end_at', new Date(value).toISOString());
+      setMessage('Đã cập nhật thời gian Flash Sale.');
+    } catch (error) {
+      setMessage(error.message || 'Không thể lưu thời gian Flash Sale.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="rounded-2xl border border-border bg-card p-6">
+      <div className="flex items-center gap-2 mb-4">
+        <Settings className="h-5 w-5 text-accent" />
+        <h2 className="text-lg font-bold text-foreground">Cấu hình Flash Sale</h2>
+      </div>
+
+      <form onSubmit={handleSave} className="flex flex-col gap-4 md:flex-row md:items-end">
+        <div className="flex-1 space-y-2">
+          <label className="text-xs font-semibold uppercase text-muted-foreground">Thời gian kết thúc</label>
+          <input
+            type="datetime-local"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            disabled={loading}
+            className="w-full h-11 rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+          />
+        </div>
+        <Button type="submit" disabled={loading || saving} className="bg-accent hover:bg-accent/90 text-accent-foreground">
+          {saving ? 'Đang lưu...' : 'Lưu Flash Sale'}
+        </Button>
+      </form>
+
+      {message && (
+        <p className="mt-3 text-sm text-muted-foreground">{message}</p>
+      )}
     </div>
   );
 }
@@ -378,7 +459,7 @@ function VoucherAdmin() {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [toast, setToast] = useState(null);
-  
+
   // Form State
   const [editingId, setEditingId] = useState(null);
   const [code, setCode] = useState('');
@@ -414,13 +495,13 @@ function VoucherAdmin() {
     setExpiredAt('');
   };
 
-  const handleEdit = (voucher) => {
+  const handleEdit = (event, voucher) => {
+    event.preventDefault();
     setEditingId(voucher.id);
     setCode(voucher.code);
     setType(voucher.type);
     setValue(voucher.value);
     setExpiredAt(voucher.expired_at ? voucher.expired_at.slice(0, 10) : '');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSubmit = async (e) => {
@@ -482,7 +563,7 @@ function VoucherAdmin() {
           <Ticket className="h-5 w-5 text-accent" />
           {editingId ? 'Cập nhật Voucher' : 'Thêm mới Voucher'}
         </h2>
-        
+
         {toast && (
           <div className={`mb-4 p-3 rounded-xl text-sm font-medium border-2 animate-in fade-in ${toast.type === 'success' ? 'bg-success/10 text-success border-success/30' : 'bg-destructive/10 text-destructive border-destructive/30'}`}>
             {toast.message}
@@ -509,7 +590,7 @@ function VoucherAdmin() {
             <label className="text-xs font-semibold text-muted-foreground uppercase">Ngày hết hạn (Tuỳ chọn)</label>
             <input type="date" value={expiredAt} onChange={(e) => setExpiredAt(e.target.value)} className="w-full mt-1 h-10 px-3 rounded-lg border border-input bg-background/50 text-sm focus:ring-2 focus:ring-accent outline-none" />
           </div>
-          
+
           <div className="flex gap-2 pt-2">
             {editingId && (
               <Button type="button" variant="outline" onClick={resetForm} className="w-full rounded-xl">Huỷ</Button>
@@ -556,7 +637,7 @@ function VoucherAdmin() {
                       <code className="px-2 py-0.5 rounded bg-muted text-accent font-mono font-bold text-xs">{v.code}</code>
                     </td>
                     <td className="py-3 px-3 text-foreground whitespace-nowrap font-medium">
-                      {v.type === 'percentage' ? `Giảm ${v.value}%` : `Giảm ${Number(v.value).toLocaleString('vi-VN')}đ`}
+                      {v.type === 'percentage' ? `Giảm ${v.value}%` : `Giảm ${formatVoucherValue(v)}`}
                     </td>
                     <td className="py-3 px-3 text-muted-foreground text-xs whitespace-nowrap font-medium">
                       {formatDate(v.expired_at)}
@@ -568,7 +649,7 @@ function VoucherAdmin() {
                     </td>
                     <td className="py-3 px-3 text-right">
                       <div className="flex items-center justify-end gap-1">
-                        <button onClick={() => handleEdit(v)} className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" title="Sửa voucher">
+                        <button type="button" onClick={(event) => handleEdit(event, v)} className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" title="Sửa voucher">
                           <Edit className="h-4 w-4" />
                         </button>
                         <button onClick={() => handleDelete(v.id)} className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors" title="Xoá voucher">
@@ -615,6 +696,7 @@ function ProductAdmin() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [originalSlug, setOriginalSlug] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState(null);
 
@@ -631,7 +713,7 @@ function ProductAdmin() {
     image: '',
     specs: '',
   });
-  
+
   const [fileToUpload, setFileToUpload] = useState(null);
 
   const loadProducts = useCallback(async () => {
@@ -659,6 +741,7 @@ function ProductAdmin() {
   const handleOpenModal = (product = null) => {
     if (product) {
       setEditingId(product.id);
+      setOriginalSlug(product.slug || '');
       setFormData({
         title: product.title || product.name || '',
         category: product.categoryOriginal || product.category || 'dien-thoai',
@@ -670,6 +753,7 @@ function ProductAdmin() {
       });
     } else {
       setEditingId(null);
+      setOriginalSlug('');
       setFormData({
         title: '',
         category: 'dien-thoai',
@@ -722,9 +806,9 @@ function ProductAdmin() {
         finalImageUrl = String(finalImageUrl || '');
       }
 
+      const nextSlug = slugifyProductTitle(formData.title);
       const payload = {
         title: formData.title,
-        slug: formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, ''),
         category: formData.category,
         price: Number(formData.price),
         old_price: formData.original_price ? Number(formData.original_price) : null,
@@ -734,17 +818,24 @@ function ProductAdmin() {
       };
 
       if (editingId) {
+        if (nextSlug && nextSlug !== originalSlug) {
+          payload.slug = nextSlug;
+        }
         await updateProduct(editingId, payload);
         showToastMsg('Cập nhật sản phẩm thành công');
       } else {
-        await createProduct({ ...payload, rating: 0, review_count: 0 });
+        await createProduct({ ...payload, slug: nextSlug, rating: 0, review_count: 0 });
         showToastMsg('Thêm sản phẩm thành công');
       }
       setShowModal(false);
       loadProducts();
     } catch (error) {
       console.error('[AdminCRUD] Lỗi lưu SP:', error);
-      showToastMsg(`Lỗi lưu sản phẩm: ${error.message || 'Có lỗi hệ thống xảy ra'}`, 'error');
+      if (error?.code === '23505') {
+        showToastMsg('Slug sản phẩm đã tồn tại. Vui lòng đổi tên sản phẩm khác.', 'error');
+      } else {
+        showToastMsg(`Lỗi lưu sản phẩm: ${error.message || 'Có lỗi hệ thống xảy ra'}`, 'error');
+      }
     } finally {
       setSubmitting(false);
     }
@@ -755,7 +846,7 @@ function ProductAdmin() {
     if (categoryFilter !== 'all') {
        matchCat = (p.category === categoryFilter || p.categoryOriginal === categoryFilter);
     }
-    
+
     let matchPrice = true;
     const price = Number(p.price) || 0;
     if (priceFilter === 'under-10') matchPrice = price < 10000000;
@@ -800,10 +891,10 @@ function ProductAdmin() {
                     { name: 'Tháng 3', 'Doanh thu': 2150000000 },
                   ]}>
                     <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
-                    <YAxis 
+                    <YAxis
                       hide
                     />
-                    <RechartsTooltip 
+                    <RechartsTooltip
                       formatter={(value) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value)}
                       contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                       cursor={{ fill: 'rgba(0,0,0,0.05)' }}
@@ -841,7 +932,7 @@ function ProductAdmin() {
                         <Cell key={`cell-${index}`} fill={color} />
                       ))}
                     </Pie>
-                    <RechartsTooltip 
+                    <RechartsTooltip
                       formatter={(value) => `${value}%`}
                       contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                     />
@@ -858,9 +949,9 @@ function ProductAdmin() {
           <Settings className="h-5 w-5 text-accent" />
           Quản lý sản phẩm
         </h2>
-        
+
         <div className="flex flex-wrap items-center gap-2">
-          <select 
+          <select
             value={categoryFilter}
             onChange={e => setCategoryFilter(e.target.value)}
             className="h-9 px-3 rounded-lg border border-input bg-background/50 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
@@ -872,8 +963,8 @@ function ProductAdmin() {
             <option value="tivi">Tivi</option>
             <option value="gia-dung">Gia dụng</option>
           </select>
-          
-          <select 
+
+          <select
             value={priceFilter}
             onChange={e => setPriceFilter(e.target.value)}
             className="h-9 px-3 rounded-lg border border-input bg-background/50 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
@@ -972,7 +1063,7 @@ function ProductAdmin() {
                 <X className="h-5 w-5" />
               </button>
             </div>
-            
+
             <div className="p-4 overflow-y-auto flex-1">
               <form id="productForm" onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1026,20 +1117,20 @@ function ProductAdmin() {
 
                 <div className="space-y-2">
                   <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Hình ảnh sản phẩm</label>
-                  
+
                   <div className="flex gap-4 items-start">
                     <div className="h-20 w-20 shrink-0 rounded-lg border-2 border-dashed border-border overflow-hidden bg-muted flex items-center justify-center">
                       {(fileToUpload || formData.image) ? (
-                        <img 
-                          src={fileToUpload ? URL.createObjectURL(fileToUpload) : formData.image} 
-                          alt="preview" 
-                          className="h-full w-full object-cover" 
+                        <img
+                          src={fileToUpload ? URL.createObjectURL(fileToUpload) : formData.image}
+                          alt="preview"
+                          className="h-full w-full object-cover"
                         />
                       ) : (
                         <ImageIcon className="h-6 w-6 text-muted-foreground/50" />
                       )}
                     </div>
-                    
+
                     <div className="flex-1 space-y-2">
                       <input
                         type="file"
@@ -1059,7 +1150,7 @@ function ProductAdmin() {
                           value={formData.image}
                           onChange={(e) => {
                               setFormData({ ...formData, image: e.target.value });
-                              setFileToUpload(null); 
+                              setFileToUpload(null);
                           }}
                           className="flex-1 h-8 px-2 rounded-md border border-input bg-background text-xs focus:outline-none focus:ring-1 focus:ring-accent"
                         />
@@ -1079,7 +1170,7 @@ function ProductAdmin() {
                   />
                   <p className="text-[10px] text-muted-foreground">Nhập dưới dạng văn bản thường: <strong>Tên thông số: Giá trị</strong>, cách nhau bằng dấu phẩy <strong>,</strong></p>
                 </div>
-                
+
                 <div className="space-y-1">
                   <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Mô tả tóm tắt</label>
                   <textarea
@@ -1091,7 +1182,7 @@ function ProductAdmin() {
                 </div>
               </form>
             </div>
-            
+
             <div className="p-4 border-t border-border flex justify-end gap-3 bg-muted/20">
               <Button type="button" variant="ghost" onClick={() => setShowModal(false)} disabled={submitting}>
                 Huỷ

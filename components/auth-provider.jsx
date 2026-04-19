@@ -1,8 +1,9 @@
 'use client';
 
+import { upsertProfileFromUser } from '@/lib/profileService';
 import { supabase } from '@/lib/supabase';
 import useAuthStore from '@/store/authStore';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 /**
  * AuthProvider — Component không render UI, chỉ làm nhiệm vụ
@@ -13,35 +14,47 @@ export function AuthProvider() {
   const setUser = useAuthStore((state) => state.setUser);
   const setSession = useAuthStore((state) => state.setSession);
   const setIsLoading = useAuthStore((state) => state.setIsLoading);
+  const bootstrappedUsersRef = useRef(new Set());
 
   useEffect(() => {
     let unsubscribed = false;
 
-    // Bước 1: Lấy session hiện tại ngay khi mount
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const syncSession = async (session) => {
       if (unsubscribed) return;
+
       setSession(session);
       setUser(session?.user || null);
       setIsLoading(false);
+
+      const currentUser = session?.user;
+      if (!currentUser?.id || bootstrappedUsersRef.current.has(currentUser.id)) {
+        return;
+      }
+
+      bootstrappedUsersRef.current.add(currentUser.id);
+      try {
+        await upsertProfileFromUser(currentUser);
+      } catch (error) {
+        console.error('[AuthProvider] Lỗi đồng bộ profile:', error);
+        bootstrappedUsersRef.current.delete(currentUser.id);
+      }
+    };
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      syncSession(session);
     });
 
-    // Bước 2: Lắng nghe mọi thay đổi auth (đăng nhập, đăng xuất, refresh token)
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (unsubscribed) return;
-      setSession(session);
-      setUser(session?.user || null);
-      setIsLoading(false);
+      syncSession(session);
     });
 
-    // Dọn dẹp khi unmount
     return () => {
       unsubscribed = true;
       subscription.unsubscribe();
     };
   }, [setUser, setSession, setIsLoading]);
 
-  // Component này không render gì cả
   return null;
 }

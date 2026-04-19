@@ -8,20 +8,20 @@ import useAuthStore from '@/store/authStore';
 import useCartStore from '@/store/cartStore';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-  Bell,
-  ChevronDown,
-  Home,
-  Laptop,
-  Menu,
-  Moon,
-  Search,
-  ShoppingCart,
-  Smartphone,
-  Sun,
-  Tablet,
-  Tv,
-  User,
-  X,
+    Bell,
+    ChevronDown,
+    Home,
+    Laptop,
+    Menu,
+    Moon,
+    Search,
+    ShoppingCart,
+    Smartphone,
+    Sun,
+    Tablet,
+    Tv,
+    User,
+    X,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -296,17 +296,17 @@ export function Header() {
                   variant="ghost"
                   size="icon"
                   className="relative"
-                  title={mounted && user ? `Giỏ hàng của bạn đang có ${cartCount} sản phẩm` : 'Giỏ hàng'}
+                  title={mounted && cartCount > 0 ? `Giỏ hàng của bạn đang có ${cartCount} sản phẩm` : 'Giỏ hàng'}
                 >
                   <ShoppingCart className="h-5 w-5" />
                   <AnimatePresence>
-                    {mounted && user && cartCount > 0 && (
+                    {mounted && cartCount > 0 && (
                       <motion.span
                         key={cartCount}
-                        initial={{ scale: 1.2, backgroundColor: '#fbbf24' }}
-                        animate={{ scale: 1, backgroundColor: 'transparent' }}
-                        transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-                        className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-accent text-accent-foreground text-xs flex items-center justify-center font-medium"
+                        initial={{ scale: 0.9, opacity: 0.8 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ type: 'spring', stiffness: 380, damping: 18 }}
+                        className="absolute -top-1.5 -right-1.5 min-w-5 h-5 px-1 rounded-full bg-orange-500 text-white text-[11px] flex items-center justify-center font-bold shadow-sm"
                       >
                         {cartCount}
                       </motion.span>
