@@ -3,12 +3,18 @@
 import { AddressBookManager } from '@/components/ecommerce/address-book-manager';
 import { Button } from '@/components/ui/button';
 import { formatFullAddress } from '@/lib/addressService';
-import { MapPin, Pencil } from 'lucide-react';
+import { MapPin, Pencil, Plus } from 'lucide-react';
 import { useState } from 'react';
 
 export function AddressForm() {
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [triggerAddCount, setTriggerAddCount] = useState(0);
+
+  const handleAddClick = () => {
+    setIsEditing(true);
+    setTriggerAddCount((prev) => prev + 1);
+  };
 
   return (
     <div className="space-y-5 rounded-2xl border border-border bg-card p-5">
@@ -22,10 +28,16 @@ export function AddressForm() {
             <p className="text-xs text-muted-foreground">Chọn địa chỉ có sẵn hoặc chỉnh sửa trực tiếp tại đây.</p>
           </div>
         </div>
-        <Button type="button" variant="outline" size="sm" className="gap-2" onClick={() => setIsEditing((prev) => !prev)}>
-          <Pencil className="h-4 w-4" />
-          {isEditing ? 'Ẩn chỉnh sửa' : 'Chỉnh sửa'}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button type="button" variant="outline" size="sm" className="gap-2" onClick={handleAddClick}>
+            <Plus className="h-4 w-4" />
+            Thêm
+          </Button>
+          <Button type="button" variant="outline" size="sm" className="gap-2" onClick={() => setIsEditing((prev) => !prev)}>
+            <Pencil className="h-4 w-4" />
+            {isEditing ? 'Ẩn' : 'Chỉnh sửa'}
+          </Button>
+        </div>
       </div>
 
       {selectedAddress && !isEditing && (
@@ -54,6 +66,8 @@ export function AddressForm() {
             }
           }}
           showTitle={false}
+          showAddButton={false}
+          externalAddTrigger={triggerAddCount}
           emptyMessage="Bạn chưa có địa chỉ nào. Hãy thêm địa chỉ để tiếp tục thanh toán."
         />
       )}

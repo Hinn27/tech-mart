@@ -48,6 +48,8 @@ export function AddressBookManager({
   showTitle = true,
   title = 'Sổ địa chỉ',
   emptyMessage = 'Bạn chưa có địa chỉ nào.',
+  showAddButton = true,
+  externalAddTrigger = 0,
 }) {
   const user = useAuthStore((state) => state.user);
   const [addresses, setAddresses] = useState([]);
@@ -58,6 +60,15 @@ export function AddressBookManager({
   const [formData, setFormData] = useState(emptyForm);
   const [formError, setFormError] = useState('');
   const [toast, setToast] = useState(null);
+
+  useEffect(() => {
+    if (externalAddTrigger > 0) {
+      setEditingAddressId(null);
+      setFormData(emptyForm);
+      setFormError('');
+      setShowForm(true);
+    }
+  }, [externalAddTrigger]);
 
   const effectiveSelectedId = useMemo(() => {
     if (selectedAddressId) return selectedAddressId;
@@ -208,15 +219,17 @@ export function AddressBookManager({
 
   return (
     <div className="space-y-5">
-      {showTitle && (
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/10">
-              <MapPin className="h-4 w-4 text-accent" />
+      {(showTitle || showAddButton) && (
+        <div className={cn("flex items-center gap-3", showTitle ? "justify-between" : "justify-end mb-2")}>
+          {showTitle && (
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/10">
+                <MapPin className="h-4 w-4 text-accent" />
+              </div>
+              <h2 className="text-base font-bold text-foreground">{title}</h2>
             </div>
-            <h2 className="text-base font-bold text-foreground">{title}</h2>
-          </div>
-          {!showForm && (
+          )}
+          {showAddButton && !showForm && (
             <Button variant="outline" size="sm" className="gap-2" onClick={() => setShowForm(true)}>
               <Plus className="h-4 w-4" />
               Thêm địa chỉ
