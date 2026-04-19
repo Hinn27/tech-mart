@@ -249,17 +249,21 @@ export function AddressBookManager({
         </div>
       )}
 
-      {loading ? (
+      {loading && (
         <div className="space-y-3">
           {[1, 2].map((item) => (
             <div key={item} className="h-24 rounded-xl bg-muted animate-pulse" />
           ))}
         </div>
-      ) : addresses.length === 0 ? (
+      )}
+
+      {!loading && addresses.length === 0 && (
         <div className="rounded-2xl border border-dashed border-border bg-card/50 p-6 text-sm text-muted-foreground">
           {emptyMessage}
         </div>
-      ) : (
+      )}
+
+      {!loading && addresses.length > 0 && (
         <div className="grid gap-3 sm:grid-cols-2">
           {addresses.map((address) => {
             const isSelected = effectiveSelectedId === address.id;
@@ -285,9 +289,9 @@ export function AddressBookManager({
                 <div className="relative flex items-start gap-3">
                   <div className={cn(
                     'mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
-                    address.label.toLowerCase().includes('công') ? 'bg-sky-100 text-sky-700' : 'bg-muted text-muted-foreground'
+                    (address.label || '').toLowerCase().includes('công') ? 'bg-sky-100 text-sky-700' : 'bg-muted text-muted-foreground'
                   )}>
-                    {address.label.toLowerCase().includes('công') ? <Building2 className="h-5 w-5" /> : <Home className="h-5 w-5" />}
+                    {(address.label || '').toLowerCase().includes('công') ? <Building2 className="h-5 w-5" /> : <Home className="h-5 w-5" />}
                   </div>
 
                   <div className="flex-1 min-w-0 space-y-1">
