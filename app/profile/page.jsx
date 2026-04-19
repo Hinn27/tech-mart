@@ -859,7 +859,7 @@ function ProductAdmin() {
         slug: formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, ''),
         category: formData.category,
         price: Number(formData.price),
-        original_price: formData.original_price ? Number(formData.original_price) : null,
+        old_price: formData.original_price ? Number(formData.original_price) : null,
         description: formData.description,
         image: finalImageUrl,
         specs: parseSpecs(formData.specs),
@@ -869,7 +869,7 @@ function ProductAdmin() {
         await updateProduct(editingId, payload);
         showToastMsg('Cập nhật sản phẩm thành công');
       } else {
-        await createProduct(payload);
+        await createProduct({ ...payload, rating: 0, review_count: 0 });
         showToastMsg('Thêm sản phẩm thành công');
       }
       setShowModal(false);
