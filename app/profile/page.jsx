@@ -833,14 +833,25 @@ function ProductAdmin() {
     try {
       let finalImageUrl = formData.image;
 
+      // Xử lý upload nếu có file được chọn từ máy tính
       if (fileToUpload) {
         try {
-          finalImageUrl = await uploadProductImage(fileToUpload);
+          const uploadedUrl = await uploadProductImage(fileToUpload);
+          if (!uploadedUrl || typeof uploadedUrl !== 'string') {
+            throw new Error('Kết quả upload không hợp lệ (không phải URL chuỗi)');
+          }
+          finalImageUrl = uploadedUrl;
         } catch (uploadError) {
-          showToastMsg('Lỗi upload ảnh', 'error');
+          console.error('[AdminCRUD] Lỗi upload:', uploadError);
+          showToastMsg(`Lỗi upload ảnh: ${uploadError.message || 'Vui lòng kiểm tra lại kết nối hoặc dung lượng file'}`, 'error');
           setSubmitting(false);
           return;
         }
+      }
+
+      // Đảm bảo finalImageUrl là chuỗi trước khi gửi payload
+      if (typeof finalImageUrl !== 'string') {
+        finalImageUrl = String(finalImageUrl || '');
       }
 
       const payload = {
@@ -865,7 +876,8 @@ function ProductAdmin() {
       setShowModal(false);
       loadProducts();
     } catch (error) {
-      showToastMsg('Lỗi lưu sản phẩm', 'error');
+      console.error('[AdminCRUD] Lỗi lưu SP:', error);
+      showToastMsg(`Lỗi lưu sản phẩm: ${error.message || 'Có lỗi hệ thống xảy ra'}`, 'error');
     } finally {
       setSubmitting(false);
     }
