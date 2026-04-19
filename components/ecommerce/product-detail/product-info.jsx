@@ -201,17 +201,41 @@ export function ProductInfo({
           <span className="font-bold text-base text-foreground">Ưu đãi khi mua hàng</span>
         </div>
         <ul className="space-y-3">
-          {product.promotions.map((promo) => (
-            <li key={promo.id} className="flex items-start gap-3 text-sm">
-              <div className="h-5 w-5 rounded-full bg-success/15 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <Check className="h-3 w-3 text-success" strokeWidth={3} />
-              </div>
-              <span className="leading-relaxed">
-                <span className="font-semibold text-foreground">{promo.title}:</span>{' '}
-                <span className="text-muted-foreground">{promo.description}</span>
-              </span>
-            </li>
-          ))}
+          {(() => {
+            const defaultPromotions = [
+              'Miễn phí giao hàng toàn quốc cho đơn hàng từ 500K.',
+              'Bảo hành chính hãng 12 tháng, lỗi 1 đổi 1 trong 30 ngày.',
+              'Thu cũ đổi mới: Trợ giá thêm đến 2 triệu đồng.',
+              'Giảm thêm 5% (tối đa 500K) khi thanh toán qua thẻ tín dụng/VNPAY.',
+            ];
+            
+            const promos = (product?.promotions && product.promotions.length > 0) 
+              ? product.promotions 
+              : defaultPromotions;
+
+            return promos.map((promo, idx) => {
+              // Phòng hờ nếu DB trả về mảng object hoặc user cấu hình mảng string
+              const isObject = typeof promo === 'object' && promo !== null;
+              
+              return (
+                <li key={isObject ? (promo.id || idx) : idx} className="flex items-start gap-3 text-sm">
+                  <div className="h-5 w-5 rounded-full bg-success/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Check className="h-3 w-3 text-success" strokeWidth={3} />
+                  </div>
+                  <span className="leading-relaxed">
+                    {isObject ? (
+                      <>
+                        <span className="font-semibold text-foreground">{promo.title}:</span>{' '}
+                        <span className="text-muted-foreground">{promo.description}</span>
+                      </>
+                    ) : (
+                      <span className="text-foreground">{promo}</span>
+                    )}
+                  </span>
+                </li>
+              );
+            });
+          })()}
         </ul>
       </div>
 
