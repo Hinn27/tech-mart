@@ -6,13 +6,24 @@ import { Footer } from '@/components/ecommerce/footer';
 import { Header } from '@/components/ecommerce/header';
 import { formatPrice } from '@/lib/mock-data';
 import { cn } from '@/lib/utils';
-import useAuthStore from '@/store/authStore';
+import { fetchActiveVouchers } from '@/lib/voucherService';
 import useCartStore from '@/store/cartStore';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Minus, Plus, ShoppingCart, Trash2 } from 'lucide-react';
+import {
+  ArrowLeft,
+  Check,
+  ClipboardCopy,
+  Minus,
+  Plus,
+  ShoppingCart,
+  Tag,
+  Ticket,
+  Trash2,
+  X,
+} from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 // Checkout route mapping
 const checkoutRoutes = {
@@ -40,8 +51,91 @@ export default function CartPage() {
   const getSubtotal = useCartStore((state) => state.getSubtotal);
   const getTotalItems = useCartStore((state) => state.getTotalItems);
 
-      const subtotal = getSubtotal();
+  const subtotal = getSubtotal();
   const totalItems = getTotalItems();
+
+  // === Voucher State ===
+  const [vouchers, setVouchers] = useState([]);
+  const [vouchersLoading, setVouchersLoading] = useState(true);
+  const [voucherInput, setVoucherInput] = useState('');
+  const [appliedVoucher, setAppliedVoucher] = useState(null);
+  const [voucherError, setVoucherError] = useState('');
+  const [copiedId, setCopiedId] = useState(null);
+  const [toast, setToast] = useState(null);
+
+  // Fetch vouchers
+  useEffect(() => {
+    async function loadVouchers() {
+      setVouchersLoading(true);
+      const data = await fetchActiveVouchers();
+      setVouchers(data);
+      setVouchersLoading(false);
+    }
+    loadVouchers();
+  }, []);
+
+  // Toast auto-dismiss
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+  };
+
+  // Tính giảm giá
+  const discountAmount = appliedVoucher
+    ? appliedVoucher.type === 'percentage'
+      ? Math.round(subtotal * (appliedVoucher.value / 100))
+      : Math.min(appliedVoucher.value, subtotal)
+    : 0;
+
+  const finalTotal = subtotal - discountAmount;
+
+  // Copy mã voucher
+  const handleCopy = useCallback(
+    async (code, id) => {
+      try {
+        await navigator.clipboard.writeText(code);
+        setCopiedId(id);
+        setVoucherInput(code);
+        showToast(`Đã copy mã "${code}"`, 'success');
+        setTimeout(() => setCopiedId(null), 2000);
+      } catch {
+        showToast('Không thể copy mã', 'error');
+      }
+    },
+    []
+  );
+
+  // Áp dụng voucher
+  const handleApplyVoucher = useCallback(() => {
+    setVoucherError('');
+    const code = voucherInput.toUpperCase().trim();
+    if (!code) {
+      setVoucherError('Vui lòng nhập mã giảm giá');
+      return;
+    }
+
+    const found = vouchers.find((v) => v.code === code && v.is_active);
+    if (!found) {
+      setVoucherError('Mã giảm giá không hợp lệ hoặc đã hết hạn');
+      return;
+    }
+
+    setAppliedVoucher(found);
+    showToast(`Đã áp dụng mã "${code}" thành công!`, 'success');
+  }, [voucherInput, vouchers]);
+
+  // Hủy voucher
+  const handleRemoveVoucher = useCallback(() => {
+    setAppliedVoucher(null);
+    setVoucherInput('');
+    setVoucherError('');
+  }, []);
 
   // Nhóm theo danh mục để checkout
   const groupedItems = cart.reduce((acc, item) => {
@@ -58,7 +152,7 @@ export default function CartPage() {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-                <main className="mx-auto max-w-[1400px] px-4 py-20 text-center">
+        <main className="mx-auto max-w-[1400px] px-4 py-20 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -91,7 +185,7 @@ export default function CartPage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-            <main className="mx-auto max-w-[1400px] px-4 py-6">
+      <main className="mx-auto max-w-[1400px] px-4 py-6">
         {/* Breadcrumbs */}
         <Breadcrumbs items={breadcrumbItems} className="mb-6" />
 
@@ -207,6 +301,16 @@ export default function CartPage() {
               <ArrowLeft className="h-4 w-4" />
               Tiếp tục mua sắm
             </Link>
+
+            {/* ======================== */}
+            {/* Mã giảm giá khả dụng */}
+            {/* ======================== */}
+            <VoucherCards
+              vouchers={vouchers}
+              loading={vouchersLoading}
+              copiedId={copiedId}
+              onCopy={handleCopy}
+            />
           </div>
 
           {/* Tóm tắt đơn hàng */}
@@ -227,6 +331,21 @@ export default function CartPage() {
                   <span className="text-muted-foreground">Phí vận chuyển</span>
                   <span className="font-medium text-success">Miễn phí</span>
                 </div>
+
+                {/* Giảm giá từ voucher */}
+                {appliedVoucher && (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <Tag className="h-3.5 w-3.5 text-success" />
+                      <span className="text-success font-medium">
+                        Mã: {appliedVoucher.code}
+                      </span>
+                    </div>
+                    <span className="font-bold text-success">
+                      -{formatPrice(discountAmount)}
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div className="border-t border-border pt-4">
@@ -235,9 +354,65 @@ export default function CartPage() {
                     Tổng cộng
                   </span>
                   <span className="text-2xl font-extrabold text-destructive">
-                    {formatPrice(subtotal)}
+                    {formatPrice(finalTotal)}
                   </span>
                 </div>
+              </div>
+
+              {/* === Ô nhập mã giảm giá === */}
+              <div className="border-t border-border pt-4">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                  Mã giảm giá
+                </p>
+                {appliedVoucher ? (
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-success/10 border border-success/30">
+                    <div className="flex items-center gap-2">
+                      <Ticket className="h-4 w-4 text-success" />
+                      <code className="text-sm font-mono font-bold text-success">
+                        {appliedVoucher.code}
+                      </code>
+                      <span className="text-xs text-success/80">
+                        {appliedVoucher.type === 'percentage'
+                          ? `(-${appliedVoucher.value}%)`
+                          : `(-${Number(appliedVoucher.value).toLocaleString('vi-VN')}đ)`}
+                      </span>
+                    </div>
+                    <button
+                      onClick={handleRemoveVoucher}
+                      className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                      aria-label="Hủy mã"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Nhập mã giảm giá"
+                        value={voucherInput}
+                        onChange={(e) => {
+                          setVoucherInput(e.target.value.toUpperCase());
+                          setVoucherError('');
+                        }}
+                        onKeyDown={(e) => e.key === 'Enter' && handleApplyVoucher()}
+                        className="flex-1 h-10 px-3 rounded-lg border border-input bg-background text-foreground text-sm font-mono font-bold placeholder:text-muted-foreground placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+                      />
+                      <button
+                        onClick={handleApplyVoucher}
+                        className="px-4 h-10 rounded-lg bg-accent hover:bg-accent/90 text-accent-foreground text-sm font-bold transition-colors"
+                      >
+                        Áp dụng
+                      </button>
+                    </div>
+                    {voucherError && (
+                      <p className="text-xs text-destructive font-medium">
+                        {voucherError}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Nút thanh toán theo danh mục */}
@@ -269,10 +444,91 @@ export default function CartPage() {
             </div>
           </div>
         </div>
+
+        {/* Toast inline */}
+        {toast && (
+          <div
+            className={`fixed bottom-5 right-5 z-[100] p-3 px-5 rounded-xl text-sm font-medium border-2 shadow-xl animate-in slide-in-from-bottom fade-in duration-200 ${
+              toast.type === 'success'
+                ? 'bg-card text-success border-success/30'
+                : 'bg-card text-destructive border-destructive/30'
+            }`}
+          >
+            {toast.message}
+          </div>
+        )}
       </main>
 
       <Footer />
       <AuthModal />
+    </div>
+  );
+}
+
+// ============================================================
+// Voucher Cards — Thẻ mã giảm giá
+// ============================================================
+function VoucherCards({ vouchers, loading, copiedId, onCopy }) {
+  if (loading) {
+    return (
+      <div className="mt-6">
+        <h3 className="text-base font-bold text-foreground flex items-center gap-2 mb-3">
+          <Ticket className="h-4 w-4 text-accent" />
+          Mã giảm giá khả dụng
+        </h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-20 rounded-xl bg-muted animate-pulse" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (vouchers.length === 0) return null;
+
+  return (
+    <div className="mt-6">
+      <h3 className="text-base font-bold text-foreground flex items-center gap-2 mb-3">
+        <Ticket className="h-4 w-4 text-accent" />
+        Mã giảm giá khả dụng
+      </h3>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {vouchers.map((v) => (
+          <button
+            key={v.id}
+            onClick={() => onCopy(v.code, v.id)}
+            className="group relative flex flex-col items-start p-3.5 rounded-xl border-2 border-dashed border-border bg-card hover:border-accent/50 hover:bg-accent/5 transition-all text-left"
+          >
+            {/* Badge Copy */}
+            <span
+              className={cn(
+                'absolute top-2 right-2 p-1 rounded-md transition-colors',
+                copiedId === v.id
+                  ? 'bg-success/15 text-success'
+                  : 'bg-muted/50 text-muted-foreground group-hover:text-accent'
+              )}
+            >
+              {copiedId === v.id ? (
+                <Check className="h-3 w-3" />
+              ) : (
+                <ClipboardCopy className="h-3 w-3" />
+              )}
+            </span>
+
+            {/* Mã */}
+            <code className="text-sm font-mono font-bold text-accent mb-1">
+              {v.code}
+            </code>
+            {/* Mô tả */}
+            <span className="text-xs text-muted-foreground">
+              {v.type === 'percentage'
+                ? `Giảm ${v.value}%`
+                : `Giảm ${Number(v.value).toLocaleString('vi-VN')}đ`}
+            </span>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
