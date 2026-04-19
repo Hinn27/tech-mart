@@ -1,18 +1,20 @@
 'use client';
 
-import { categories, promotions } from '@/lib/mock-data';
+import { categories } from '@/lib/mock-data';
 import { cn } from '@/lib/utils';
+import { fetchActiveVouchers } from '@/lib/voucherService';
 import {
+  Check,
   ChevronRight,
-  GraduationCap,
+  ClipboardCopy,
   Home,
   Laptop,
   Smartphone,
   Tablet,
   Ticket,
   Tv,
-  Zap,
 } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 
 const categoryIcons = {
   smartphone: <Smartphone className="h-5 w-5" />,
@@ -57,52 +59,126 @@ export function CategorySidebar() {
   );
 }
 
-// Right Sidebar - Promotions
+// Right Sidebar - Vouchers
 export function PromotionSidebar() {
-  const promoIcons = [
-    <Ticket className="h-6 w-6" key="ticket" />,
-    <GraduationCap className="h-6 w-6" key="grad" />,
-    <Zap className="h-6 w-6" key="zap" />,
-  ];
+  const [vouchers, setVouchers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [copiedId, setCopiedId] = useState(null);
+  const [toast, setToast] = useState(null);
+
+  useEffect(() => {
+    async function getVouchers() {
+      setLoading(true);
+      const data = await fetchActiveVouchers();
+      setVouchers(data);
+      setLoading(false);
+    }
+    getVouchers();
+  }, []);
+
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+  };
+
+  const handleCopy = useCallback(async (code, id) => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopiedId(id);
+      showToast(`Đã copy mã "${code}"`, 'success');
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch {
+      showToast('Không thể copy mã', 'error');
+    }
+  }, []);
+
+  if (loading) {
+    return (
+      <aside className="hidden lg:block w-[220px] flex-shrink-0">
+        <div className="sticky top-20 space-y-4">
+          {[1, 2, 3].map((i) => (
+             <div key={i} className="h-32 rounded-xl bg-muted animate-pulse" />
+          ))}
+        </div>
+      </aside>
+    );
+  }
+
+  const bgColors = ['bg-blue-500', 'bg-violet-500', 'bg-emerald-500', 'bg-rose-500', 'bg-amber-500'];
 
   return (
     <aside className="hidden lg:block w-[220px] flex-shrink-0">
+      {/* Toast inline */}
+      {toast && (
+        <div
+          className={`fixed bottom-5 right-5 z-[100] p-3 px-5 rounded-xl text-sm font-medium border-2 shadow-xl animate-in slide-in-from-bottom fade-in duration-200 ${
+            toast.type === 'success'
+              ? 'bg-card text-success border-success/30'
+              : 'bg-card text-destructive border-destructive/30'
+          }`}
+        >
+          {toast.message}
+        </div>
+      )}
+
       <div className="sticky top-20 space-y-4">
-        {promotions.map((promo, index) => (
-          <a
-            key={promo.id}
-            href="#"
-            className={cn(
-              "block rounded-xl p-5 text-white overflow-hidden relative group",
-              promo.bgColor
-            )}
-          >
-            {/* Background pattern */}
-            <div className="absolute inset-0 opacity-10">
-              <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-white/20" />
-              <div className="absolute -right-2 bottom-0 h-16 w-16 rounded-full bg-white/20" />
-            </div>
-
-            <div className="relative z-10">
-              <div className="mb-3 opacity-80">
-                {promoIcons[index]}
+        <div className="flex items-center gap-2 mb-2 px-1">
+           <Ticket className="h-5 w-5 text-accent" />
+           <h3 className="font-bold text-foreground">Góc Ưu Đãi</h3>
+        </div>
+        
+        {vouchers.length === 0 ? (
+           <p className="text-sm text-muted-foreground px-1">Hiện chưa có ưu đãi nào.</p>
+        ) : vouchers.map((v, index) => {
+          const bgColor = bgColors[index % bgColors.length];
+          return (
+            <div
+              key={v.id}
+              className={cn(
+                "block rounded-xl p-4 text-white overflow-hidden relative group",
+                bgColor
+              )}
+            >
+              {/* Background pattern */}
+              <div className="absolute inset-0 opacity-10">
+                <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-white/20" />
+                <div className="absolute -right-2 bottom-0 h-16 w-16 rounded-full bg-white/20" />
               </div>
-              <h4 className="font-bold text-lg mb-1">{promo.title}</h4>
-              <p className="text-sm opacity-90 font-medium">{promo.subtitle}</p>
-              {promo.code && (
-                <div className="mt-3 inline-block px-3 py-1 rounded bg-white/20 backdrop-blur-sm text-xs font-mono font-bold">
-                  {promo.code}
-                </div>
-              )}
-              {promo.description && (
-                <p className="mt-2 text-xs opacity-75">{promo.description}</p>
-              )}
-            </div>
 
-            {/* Hover effect */}
-            <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-          </a>
-        ))}
+              <div className="relative z-10 flex flex-col items-start gap-1">
+                <h4 className="font-bold text-base line-clamp-1">
+                  {v.type === 'percentage'
+                      ? `Giảm ${v.value}%`
+                      : `Giảm ${Number(v.value).toLocaleString('vi-VN')}đ`}
+                </h4>
+                <p className="text-xs opacity-90 font-medium">Tất cả sản phẩm</p>
+                <div className="mt-2 w-full flex items-center justify-between bg-white/20 backdrop-blur-sm rounded-lg p-1.5 pl-3">
+                   <code className="text-sm font-mono font-bold tracking-wider">{v.code}</code>
+                   <button
+                     onClick={(e) => {
+                       e.preventDefault();
+                       handleCopy(v.code, v.id);
+                     }}
+                     className="p-1.5 rounded-md hover:bg-white/20 transition-colors"
+                     title={`Copy mã ${v.code}`}
+                   >
+                     {copiedId === v.id ? (
+                        <Check className="h-4 w-4" />
+                      ) : (
+                        <ClipboardCopy className="h-4 w-4" />
+                      )}
+                   </button>
+                </div>
+              </div>
+            </div>
+          )
+        })}
       </div>
     </aside>
   );
