@@ -5,7 +5,7 @@ import { formatPrice } from '@/lib/mock-data';
 import { cn } from '@/lib/utils';
 import useAuthStore from '@/store/authStore';
 import { Check, Gift, Minus, Plus, ShoppingCart, Star, Zap } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ColorSelector, StorageSelector } from './variant-selector';
 
 export function ProductInfo({
@@ -16,16 +16,89 @@ export function ProductInfo({
   onColorChange,
   onAddToCart,
   onBuyNow,
-  user,
-  openAuthModal,
 }) {
   const [quantity, setQuantity] = useState(1);
+
+  // Đọc trực tiếp từ useAuthStore — không dùng props để đảm bảo reactive
+  const user = useAuthStore((state) => state.user);
+  const isLoading = useAuthStore((state) => state.isLoading);
+  const openAuthModal = useAuthStore((state) => state.openAuthModal);
+
+  // Hydration guard: tránh mismatch giữa SSR (user=null) và CSR (user=object)
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
 
   const discount = Math.round(
     ((selectedVariant.originalPrice - selectedVariant.price) /
       selectedVariant.originalPrice) *
       100
   );
+
+  // Render CTA buttons dựa trên trạng thái auth
+  const renderCTAButtons = () => {
+    // Chưa hydrate hoặc đang loading auth → hiện skeleton
+    if (!hydrated || isLoading) {
+      return (
+        <div className="grid grid-cols-2 gap-3">
+          <div className="h-14 rounded-xl bg-muted/60 animate-pulse" />
+          <div className="h-14 rounded-xl bg-muted/60 animate-pulse" />
+        </div>
+      );
+    }
+
+    // Đã xác thực xong
+    if (user) {
+      // User đã đăng nhập → nút Thêm vào giỏ + Mua ngay
+      return (
+        <div className="grid grid-cols-2 gap-3">
+          <Button
+            size="lg"
+            className="gap-2.5 h-14 text-base font-bold rounded-xl bg-accent hover:bg-accent/90 text-accent-foreground shadow-lg shadow-accent/20 transition-all active:scale-[0.98]"
+            onClick={() => onAddToCart(quantity)}
+            disabled={!selectedVariant.inStock}
+          >
+            <ShoppingCart className="h-5 w-5" />
+            THÊM VÀO GIỎ HÀNG
+          </Button>
+          <Button
+            size="lg"
+            className="gap-2.5 h-14 text-base font-bold rounded-xl bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/20 transition-all active:scale-[0.98]"
+            onClick={() => onBuyNow(quantity)}
+            disabled={!selectedVariant.inStock}
+          >
+            <Zap className="h-5 w-5" />
+            MUA NGAY
+          </Button>
+        </div>
+      );
+    }
+
+    // User chưa đăng nhập → nút Đăng nhập để mua
+    return (
+      <div className="grid grid-cols-2 gap-3">
+        <Button
+          size="lg"
+          className="gap-2.5 h-14 text-base font-bold rounded-xl bg-accent hover:bg-accent/90 text-accent-foreground shadow-lg shadow-accent/20 transition-all active:scale-[0.98]"
+          onClick={() => openAuthModal()}
+          disabled={!selectedVariant.inStock}
+        >
+          <ShoppingCart className="h-5 w-5" />
+          ĐĂNG NHẬP ĐỂ MUA
+        </Button>
+        <Button
+          size="lg"
+          className="gap-2.5 h-14 text-base font-bold rounded-xl bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/20 transition-all active:scale-[0.98]"
+          onClick={() => openAuthModal()}
+          disabled={!selectedVariant.inStock}
+        >
+          <Zap className="h-5 w-5" />
+          ĐĂNG NHẬP ĐỂ MUA
+        </Button>
+      </div>
+    );
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -191,42 +264,8 @@ export function ProductInfo({
           )}
         </div>
 
-        {/* 2 nút CTA to ngang nhau */}
-        <div className="grid grid-cols-2 gap-3">
-          {/* Nút THÊM VÀO GIỎ HÀNG — To, nổi bật, màu Accent (Cam Neon #FF5722) */}
-          <Button
-            size="lg"
-            className="gap-2.5 h-14 text-base font-bold rounded-xl bg-accent hover:bg-accent/90 text-accent-foreground shadow-lg shadow-accent/20 transition-all active:scale-[0.98]"
-            onClick={() => {
-              if (!user) {
-                useAuthStore.getState().openAuthModal();
-                return;
-              }
-              onAddToCart(quantity);
-            }}
-            disabled={!selectedVariant.inStock}
-          >
-            <ShoppingCart className="h-5 w-5" />
-            {user ? 'THÊM VÀO GIỎ HÀNG' : 'ĐĂNG NHẬP ĐỂ MUA'}
-          </Button>
-
-          {/* Nút MUA NGAY — To ngang, màu Đỏ thuần */}
-          <Button
-            size="lg"
-            className="gap-2.5 h-14 text-base font-bold rounded-xl bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/20 transition-all active:scale-[0.98]"
-            onClick={() => {
-              if (!user) {
-                useAuthStore.getState().openAuthModal();
-                return;
-              }
-              onBuyNow(quantity);
-            }}
-            disabled={!selectedVariant.inStock}
-          >
-            <Zap className="h-5 w-5" />
-            {user ? 'MUA NGAY' : 'ĐĂNG NHẬP ĐỂ MUA'}
-          </Button>
-        </div>
+        {/* 2 nút CTA — render dựa trên trạng thái auth */}
+        {renderCTAButtons()}
       </div>
     </div>
   );
