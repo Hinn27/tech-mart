@@ -1,6 +1,13 @@
-'use client';
+"use client";
 
-import { Facebook, Mail, MapPin, MessageCircle, Phone, Youtube } from 'lucide-react';
+import {
+  Facebook,
+  Mail,
+  MapPin,
+  MessageCircle,
+  Phone,
+  Youtube,
+} from "lucide-react";
 
 export function Footer() {
   return (
@@ -13,10 +20,13 @@ export function Footer() {
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent text-accent-foreground font-bold">
                 TE
               </div>
-              <span className="font-bold text-xl text-foreground">TechElite</span>
+              <span className="font-bold text-xl text-foreground">
+                TechElite
+              </span>
             </div>
             <p className="text-sm text-muted-foreground mb-4">
-              Hệ thống bán lẻ điện tử uy tín hàng đầu Việt Nam với hơn 500 cửa hàng trên toàn quốc.
+              Hệ thống bán lẻ điện tử uy tín hàng đầu Việt Nam với hơn 500 cửa
+              hàng trên toàn quốc.
             </p>
             <div className="flex items-center gap-3">
               <a
@@ -45,30 +55,47 @@ export function Footer() {
 
           {/* Customer Support */}
           <div>
-            <h4 className="font-semibold text-foreground mb-4">Hỗ trợ khách hàng</h4>
+            <h4 className="font-semibold text-foreground mb-4">
+              Hỗ trợ khách hàng
+            </h4>
             <ul className="space-y-3 text-sm">
               <li>
-                <a href="#" className="text-muted-foreground hover:text-accent transition-colors">
+                <a
+                  href="#"
+                  className="text-muted-foreground hover:text-accent transition-colors"
+                >
                   Hướng dẫn mua hàng
                 </a>
               </li>
               <li>
-                <a href="#" className="text-muted-foreground hover:text-accent transition-colors">
+                <a
+                  href="#"
+                  className="text-muted-foreground hover:text-accent transition-colors"
+                >
                   Hướng dẫn thanh toán
                 </a>
               </li>
               <li>
-                <a href="#" className="text-muted-foreground hover:text-accent transition-colors">
+                <a
+                  href="#"
+                  className="text-muted-foreground hover:text-accent transition-colors"
+                >
                   Tra cứu đơn hàng
                 </a>
               </li>
               <li>
-                <a href="#" className="text-muted-foreground hover:text-accent transition-colors">
+                <a
+                  href="#"
+                  className="text-muted-foreground hover:text-accent transition-colors"
+                >
                   Hỏi đáp - FAQ
                 </a>
               </li>
               <li>
-                <a href="#" className="text-muted-foreground hover:text-accent transition-colors">
+                <a
+                  href="#"
+                  className="text-muted-foreground hover:text-accent transition-colors"
+                >
                   Trung tâm bảo hành
                 </a>
               </li>
@@ -77,30 +104,47 @@ export function Footer() {
 
           {/* Policies */}
           <div>
-            <h4 className="font-semibold text-foreground mb-4">Chính sách mua hàng</h4>
+            <h4 className="font-semibold text-foreground mb-4">
+              Chính sách mua hàng
+            </h4>
             <ul className="space-y-3 text-sm">
               <li>
-                <a href="#" className="text-muted-foreground hover:text-accent transition-colors">
+                <a
+                  href="#"
+                  className="text-muted-foreground hover:text-accent transition-colors"
+                >
                   Chính sách bảo hành
                 </a>
               </li>
               <li>
-                <a href="#" className="text-muted-foreground hover:text-accent transition-colors">
+                <a
+                  href="#"
+                  className="text-muted-foreground hover:text-accent transition-colors"
+                >
                   Chính sách đổi trả
                 </a>
               </li>
               <li>
-                <a href="#" className="text-muted-foreground hover:text-accent transition-colors">
+                <a
+                  href="#"
+                  className="text-muted-foreground hover:text-accent transition-colors"
+                >
                   Chính sách vận chuyển
                 </a>
               </li>
               <li>
-                <a href="#" className="text-muted-foreground hover:text-accent transition-colors">
+                <a
+                  href="#"
+                  className="text-muted-foreground hover:text-accent transition-colors"
+                >
                   Chính sách bảo mật
                 </a>
               </li>
               <li>
-                <a href="#" className="text-muted-foreground hover:text-accent transition-colors">
+                <a
+                  href="#"
+                  className="text-muted-foreground hover:text-accent transition-colors"
+                >
                   Điều khoản sử dụng
                 </a>
               </li>
@@ -109,14 +153,19 @@ export function Footer() {
 
           {/* Contact */}
           <div>
-            <h4 className="font-semibold text-foreground mb-4">Thông tin liên hệ</h4>
+            <h4 className="font-semibold text-foreground mb-4">
+              Thông tin liên hệ
+            </h4>
             <ul className="space-y-3 text-sm">
               <li className="flex items-start gap-3">
                 <Phone className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="text-muted-foreground">Hotline mua hàng</p>
-                  <a href="tel:1800599999" className="font-semibold text-foreground hover:text-accent transition-colors">
-                    1800 599 999 (Miễn phí)
+                  <a
+                    href="tel:1800599999"
+                    className="font-semibold text-foreground hover:text-accent transition-colors"
+                  >
+                    1900 999 999 (Miễn phí)
                   </a>
                 </div>
               </li>
@@ -124,7 +173,10 @@ export function Footer() {
                 <Mail className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="text-muted-foreground">Email hỗ trợ</p>
-                  <a href="mailto:support@techelite.vn" className="text-foreground hover:text-accent transition-colors">
+                  <a
+                    href="mailto:support@techelite.vn"
+                    className="text-foreground hover:text-accent transition-colors"
+                  >
                     support@techelite.vn
                   </a>
                 </div>
@@ -134,7 +186,8 @@ export function Footer() {
                 <div>
                   <p className="text-muted-foreground">Văn phòng</p>
                   <span className="text-foreground">
-                    Tòa nhà ABC, 123 Nguyễn Huệ, Q.1, TP.HCM
+                    Trường Đại học Đông Á, 33 Xô Viết Nghệ Tĩnh, Hoà Cường, Đà
+                    Nẵng
                   </span>
                 </div>
               </li>
@@ -146,7 +199,7 @@ export function Footer() {
         <div className="mt-10 pt-6 border-t border-border">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-sm text-muted-foreground text-center md:text-left">
-              © 2024 TechElite. Tất cả các quyền được bảo lưu.
+              © 2026 TechElite. Tất cả các quyền được bảo lưu.
             </p>
             <div className="flex items-center gap-4">
               <img
