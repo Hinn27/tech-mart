@@ -3,6 +3,7 @@
 import { categories } from '@/lib/mock-data';
 import { cn } from '@/lib/utils';
 import { fetchActiveVouchers } from '@/lib/voucherService';
+import useAuthStore from '@/store/authStore';
 import {
   Check,
   ChevronRight,
@@ -61,6 +62,9 @@ export function CategorySidebar() {
 
 // Right Sidebar - Vouchers
 export function PromotionSidebar() {
+  const user = useAuthStore((state) => state.user);
+  const isStudent = user?.email?.toLowerCase().endsWith('.edu.vn');
+
   const [vouchers, setVouchers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState(null);
@@ -133,7 +137,40 @@ export function PromotionSidebar() {
            <h3 className="font-bold text-foreground">Góc Ưu Đãi</h3>
         </div>
         
-        {vouchers.length === 0 ? (
+        {/* Student Voucher */}
+        {isStudent && (
+          <div className="block rounded-xl p-4 text-white overflow-hidden relative group bg-gradient-to-br from-emerald-500 to-teal-600">
+            <div className="absolute inset-0 opacity-10">
+              <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-white/20" />
+              <div className="absolute -right-2 bottom-0 h-16 w-16 rounded-full bg-white/20" />
+            </div>
+            <div className="relative z-10 flex flex-col items-start gap-1">
+              <h4 className="font-bold text-base line-clamp-1">
+                Giảm 10%
+              </h4>
+              <p className="text-xs opacity-90 font-medium">Sinh viên TechMart</p>
+              <div className="mt-2 w-full flex items-center justify-between bg-white/20 backdrop-blur-sm rounded-lg p-1.5 pl-3">
+                 <code className="text-sm font-mono font-bold tracking-wider">SV-TECHMART</code>
+                 <button
+                   onClick={(e) => {
+                     e.preventDefault();
+                     handleCopy('SV-TECHMART', 'sv-voucher');
+                   }}
+                   className="p-1.5 rounded-md hover:bg-white/20 transition-colors"
+                   title={`Copy mã SV-TECHMART`}
+                 >
+                   {copiedId === 'sv-voucher' ? (
+                      <Check className="h-4 w-4" />
+                    ) : (
+                      <ClipboardCopy className="h-4 w-4" />
+                    )}
+                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {!isStudent && vouchers.length === 0 ? (
            <p className="text-sm text-muted-foreground px-1">Hiện chưa có ưu đãi nào.</p>
         ) : vouchers.map((v, index) => {
           const bgColor = bgColors[index % bgColors.length];
