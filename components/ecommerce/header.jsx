@@ -246,14 +246,14 @@ export function Header() {
                 <div className="hidden sm:block w-20 h-9 rounded-lg bg-muted/50 animate-pulse" />
               ) : user ? (
                 <div className="hidden sm:flex items-center gap-2">
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50">
+                  <Link href="/profile" className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
                     <div className="h-7 w-7 rounded-full bg-accent text-accent-foreground flex items-center justify-center text-xs font-bold">
                       {user.email?.charAt(0).toUpperCase() || 'U'}
                     </div>
                     <span className="text-sm text-foreground max-w-[120px] truncate hidden lg:inline">
                       {user.email?.split('@')[0] || 'User'}
                     </span>
-                  </div>
+                  </Link>
                   <Button
                     variant="ghost"
                     size="sm"
