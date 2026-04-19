@@ -720,6 +720,26 @@ function VoucherSidebar() {
 }
 
 // ============================================================
+// Helpers
+// ============================================================
+const parseSpecs = (text) => {
+  if (!text || !text.trim()) return {};
+  const obj = {};
+  text.split(',').forEach(part => {
+     const [key, ...vals] = part.split(':');
+     if (key && vals.length > 0) {
+       obj[key.trim()] = vals.join(':').trim();
+     }
+  });
+  return obj;
+}
+
+const stringifySpecs = (obj) => {
+  if (!obj || typeof obj !== 'object' || Object.keys(obj).length === 0) return '';
+  return Object.entries(obj).map(([key, val]) => `${key}: ${val}`).join(', ');
+}
+
+// ============================================================
 // Product Admin — Bảng quản lý Sản phẩm (CRUD)
 // ============================================================
 function ProductAdmin() {
@@ -730,6 +750,10 @@ function ProductAdmin() {
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState(null);
 
+  // Filters
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [priceFilter, setPriceFilter] = useState('all');
+
   const [formData, setFormData] = useState({
     title: '',
     category: 'dien-thoai',
@@ -737,7 +761,7 @@ function ProductAdmin() {
     original_price: '',
     description: '',
     image: '',
-    specs: '{}',
+    specs: '',
   });
   
   const [fileToUpload, setFileToUpload] = useState(null);
@@ -774,7 +798,7 @@ function ProductAdmin() {
         original_price: product.originalPrice || product.oldPrice || '',
         description: product.description || '',
         image: product.image || '',
-        specs: typeof product.specs === 'object' ? JSON.stringify(product.specs, null, 2) : (product.specs || '{}'),
+        specs: typeof product.specs === 'object' ? stringifySpecs(product.specs) : (product.specs || ''),
       });
     } else {
       setEditingId(null);
@@ -785,7 +809,7 @@ function ProductAdmin() {
         original_price: '',
         description: '',
         image: '',
-        specs: '{}',
+        specs: '',
       });
     }
     setFileToUpload(null);
@@ -828,7 +852,7 @@ function ProductAdmin() {
         original_price: formData.original_price ? Number(formData.original_price) : null,
         description: formData.description,
         image: finalImageUrl,
-        specs: formData.specs, // Save as string
+        specs: parseSpecs(formData.specs),
       };
 
       if (editingId) {
@@ -847,8 +871,23 @@ function ProductAdmin() {
     }
   };
 
+  const filteredProducts = products.filter((p) => {
+    let matchCat = true;
+    if (categoryFilter !== 'all') {
+       matchCat = (p.category === categoryFilter || p.categoryOriginal === categoryFilter);
+    }
+    
+    let matchPrice = true;
+    const price = Number(p.price) || 0;
+    if (priceFilter === 'under-10') matchPrice = price < 10000000;
+    else if (priceFilter === '10-20') matchPrice = price >= 10000000 && price <= 20000000;
+    else if (priceFilter === 'over-20') matchPrice = price > 20000000;
+
+    return matchCat && matchPrice;
+  });
+
   return (
-    <div className="rounded-2xl border border-border bg-card p-6">
+    <div className="rounded-2xl border border-border bg-card p-6 flex flex-col min-h-[500px]">
       {toast && (
         <div
           className={`fixed bottom-5 right-5 z-[100] p-3 px-5 rounded-xl text-sm font-medium border-2 shadow-xl animate-in slide-in-from-bottom fade-in duration-200 ${
@@ -861,14 +900,41 @@ function ProductAdmin() {
         </div>
       )}
 
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
           <Settings className="h-5 w-5 text-accent" />
           Quản lý sản phẩm
         </h2>
-        <Button size="sm" onClick={() => handleOpenModal()} className="gap-1.5 h-9 bg-accent hover:bg-accent/90 text-accent-foreground font-bold">
-          <Plus className="h-4 w-4" /> Thêm SP
-        </Button>
+        
+        <div className="flex flex-wrap items-center gap-2">
+          <select 
+            value={categoryFilter}
+            onChange={e => setCategoryFilter(e.target.value)}
+            className="h-9 px-3 rounded-lg border border-input bg-background/50 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+          >
+            <option value="all">Tất cả danh mục</option>
+            <option value="dien-thoai">Điện thoại</option>
+            <option value="laptop">Laptop</option>
+            <option value="may-tinh-bang">Tablet</option>
+            <option value="tivi">Tivi</option>
+            <option value="gia-dung">Gia dụng</option>
+          </select>
+          
+          <select 
+            value={priceFilter}
+            onChange={e => setPriceFilter(e.target.value)}
+            className="h-9 px-3 rounded-lg border border-input bg-background/50 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+          >
+            <option value="all">Mọi mức giá</option>
+            <option value="under-10">Dưới 10 triệu</option>
+            <option value="10-20">10tr - 20tr</option>
+            <option value="over-20">Trên 20 triệu</option>
+          </select>
+
+          <Button size="sm" onClick={() => handleOpenModal()} className="gap-1.5 h-9 bg-accent hover:bg-accent/90 text-accent-foreground font-bold ml-auto sm:ml-2">
+            <Plus className="h-4 w-4" /> Thêm SP
+          </Button>
+        </div>
       </div>
 
       {loading ? (
@@ -890,7 +956,7 @@ function ProductAdmin() {
               </tr>
             </thead>
             <tbody>
-              {products.map((p) => (
+              {filteredProducts.map((p) => (
                 <tr key={p.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
                   <td className="py-2 px-3">
                     <div className="h-10 w-10 rounded-md bg-muted overflow-hidden">
@@ -927,9 +993,9 @@ function ProductAdmin() {
                   </td>
                 </tr>
               ))}
-              {products.length === 0 && (
+              {filteredProducts.length === 0 && (
                 <tr>
-                  <td colSpan="5" className="py-8 text-center text-muted-foreground">Chưa có sản phẩm nào.</td>
+                  <td colSpan="5" className="py-8 text-center text-muted-foreground">Chưa có sản phẩm nào phù hợp.</td>
                 </tr>
               )}
             </tbody>
@@ -1050,15 +1116,15 @@ function ProductAdmin() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Thông số kỹ thuật (JSON format)</label>
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Thông số kỹ thuật</label>
                   <textarea
                     rows={4}
                     value={formData.specs}
                     onChange={(e) => setFormData({ ...formData, specs: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg border border-input bg-background font-mono text-xs focus:outline-none focus:ring-2 focus:ring-accent"
-                    placeholder='{"cpu": "Apple M1", "ram": "8GB"}'
+                    className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                    placeholder="Màn hình: 6.1 inch, Chip: Apple A15, RAM: 8GB"
                   />
-                  <p className="text-[10px] text-muted-foreground">Phải là chuỗi JSON hợp lệ. VD: {'`{"màn hình": "6.1 inch", "chip": "Apple A15"}`'}</p>
+                  <p className="text-[10px] text-muted-foreground">Nhập dưới dạng văn bản thường: <strong>Tên thông số: Giá trị</strong>, cách nhau bằng dấu phẩy <strong>,</strong></p>
                 </div>
                 
                 <div className="space-y-1">
