@@ -112,7 +112,7 @@ export function ProductAccordion({ product }) {
 
           <AccordionContent className="px-0 pb-4">
             <div className="px-5">
-              <SpecificationsContent specifications={product.specifications} />
+              <SpecificationsContent specs={product.specs} />
             </div>
           </AccordionContent>
         </AccordionItem>
@@ -192,51 +192,53 @@ function HighlightsContent({ content }) {
 // Nội dung Accordion 2: Thông số kỹ thuật
 // Bảng Table sọc ngựa vằn
 // ============================================
-function SpecificationsContent({
-  specifications,
-}) {
-  return (
-    <div className="space-y-6">
-      {specifications.map((section, sectionIndex) => (
-        <div key={sectionIndex}>
-          {/* Tiêu đề nhóm */}
-          <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-            <span className="h-1 w-4 rounded-full bg-accent" />
-            {section.category}
-          </h3>
-
-          {/* Table sọc ngựa vằn — chi tiết CPU, RAM, Màn hình */}
-          <div className="rounded-xl border border-border overflow-hidden">
-            <table className="w-full text-sm">
-              <tbody>
-                {section.specs.map((spec, specIndex) => (
-                  <tr
-                    key={specIndex}
-                    className={cn(
-                      // Sọc ngựa vằn: xen kẽ màu nền
-                      specIndex % 2 === 0
-                        ? 'bg-muted/60'
-                        : 'bg-background',
-                      'transition-colors hover:bg-accent/5'
-                    )}
-                  >
-                    {/* Tên thông số */}
-                    <td className="px-4 py-3 text-sm font-semibold text-muted-foreground w-2/5 border-r border-border align-top">
-                      {spec.label}
-                    </td>
-                    {/* Giá trị */}
-                    <td className="px-4 py-3 text-sm text-foreground font-medium">
-                      {spec.value}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+function SpecificationsContent({ specs }) {
+  if (specs && Object.keys(specs).length > 0 && typeof specs === 'object' && !Array.isArray(specs)) {
+    return (
+      <div className="pt-0 px-0 pb-4">
+        <div className="px-5">
+          <table className="w-full text-sm border-collapse">
+            <tbody>
+              {Object.entries(specs).map(([key, value], idx) => (
+                <tr key={idx} className="border-b border-gray-100 last:border-0 hover:bg-muted/50 transition-colors">
+                  <td className="py-3 pr-4 font-medium text-muted-foreground w-[40%] align-top">{key}</td>
+                  <td className="py-3 text-foreground leading-relaxed">{String(value)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      ))}
-    </div>
-  );
+      </div>
+    );
+  }
+
+  // Luồng dự phòng nếu specs là chuỗi thô có dấu phẩy
+  if (typeof specs === 'string' && specs.trim() !== '') {
+    return (
+      <div className="pt-0 px-0 pb-4">
+        <div className="px-5">
+          <table className="w-full text-sm border-collapse">
+            <tbody>
+              {specs.split(',').map((item, idx) => {
+                const parts = item.split(':');
+                const key = parts[0]?.trim();
+                const val = parts.slice(1).join(':')?.trim();
+                if (!key || !val) return null;
+                return (
+                  <tr key={idx} className="border-b border-gray-100 last:border-0 hover:bg-muted/50 transition-colors">
+                    <td className="py-3 pr-4 font-medium text-muted-foreground w-[40%] align-top">{key}</td>
+                    <td className="py-3 text-foreground leading-relaxed">{val}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  }
+
+  return <div className="p-5 text-sm text-muted-foreground">Đang cập nhật thông số kỹ thuật...</div>;
 }
 
 // ============================================
