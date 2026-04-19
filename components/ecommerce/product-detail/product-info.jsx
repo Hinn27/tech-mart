@@ -208,15 +208,15 @@ export function ProductInfo({
               'Thu cũ đổi mới: Trợ giá thêm đến 2 triệu đồng.',
               'Giảm thêm 5% (tối đa 500K) khi thanh toán qua thẻ tín dụng/VNPAY.',
             ];
-            
-            const promos = (product?.promotions && product.promotions.length > 0) 
-              ? product.promotions 
+
+            const promos = (product?.promotions && product.promotions.length > 0)
+              ? product.promotions
               : defaultPromotions;
 
             return promos.map((promo, idx) => {
               // Phòng hờ nếu DB trả về mảng object hoặc user cấu hình mảng string
               const isObject = typeof promo === 'object' && promo !== null;
-              
+
               return (
                 <li key={isObject ? (promo.id || idx) : idx} className="flex items-start gap-3 text-sm">
                   <div className="h-5 w-5 rounded-full bg-success/15 flex items-center justify-center flex-shrink-0 mt-0.5">
