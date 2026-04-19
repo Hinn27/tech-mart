@@ -121,42 +121,56 @@ function HighlightsTab({ content }) {
 }
 
 function SpecificationsTab({ specs }) {
-  const specsData = specs;
-  
-  // 1. Nếu không có data
-  if (!specsData) return <p className="text-muted-foreground italic text-center py-6">Chưa có thông tin thông số kỹ thuật.</p>;
+  if (!specs) return <p className="text-muted-foreground italic text-center py-6">Chưa có thông tin thông số kỹ thuật.</p>;
 
-  // 2. Cố gắng parse nếu nó là String
-  let parsedSpecs = specsData;
-  if (typeof specsData === 'string') {
-    try {
-      parsedSpecs = JSON.parse(specsData);
-    } catch (e) {
-      // Nếu string không phải JSON chuẩn, in ra luôn đoạn string đó
-      return <p className="text-foreground whitespace-pre-wrap">{specsData}</p>;
+  try {
+    // Luồng 1: Cố gắng xử lý nếu nó là JSON hoặc Object chuẩn
+    const specsObj = typeof specs === 'string' ? JSON.parse(specs) : specs;
+    if (typeof specsObj === 'object' && specsObj !== null && !Array.isArray(specsObj)) {
+      return (
+        <div className="rounded-xl border border-border overflow-hidden">
+          <table className="w-full text-sm border-collapse">
+            <tbody>
+              {Object.entries(specsObj).map(([key, value], idx) => (
+                <tr key={idx} className="border-b border-border hover:bg-accent/5 transition-colors">
+                  <td className="py-3 px-4 font-medium text-muted-foreground w-1/3 align-top border-r border-border capitalize">{key}</td>
+                  <td className="py-3 px-4 text-foreground font-medium leading-relaxed">{String(value)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+    }
+  } catch (e) {
+    // Luồng 2: Nếu parse lỗi -> Nó là chuỗi thô phân cách bằng dấu phẩy
+    if (typeof specs === 'string') {
+      return (
+        <div className="rounded-xl border border-border overflow-hidden">
+          <table className="w-full text-sm border-collapse">
+            <tbody>
+              {specs.split(',').map((item, idx) => {
+                const parts = item.split(':');
+                const key = parts[0]?.trim();
+                const val = parts.slice(1).join(':')?.trim();
+                
+                if (!key || !val) return null;
+                return (
+                  <tr key={idx} className="border-b border-border hover:bg-accent/5 transition-colors">
+                    <td className="py-3 px-4 font-medium text-muted-foreground w-1/3 align-top border-r border-border capitalize">{key}</td>
+                    <td className="py-3 px-4 text-foreground font-medium leading-relaxed">{val}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      );
     }
   }
 
-  // 3. Nếu là Object (JSON chuẩn), render ra Table
-  if (typeof parsedSpecs === 'object' && !Array.isArray(parsedSpecs)) {
-    return (
-      <div className="rounded-xl border border-border overflow-hidden">
-        <table className="w-full text-sm border-collapse">
-          <tbody>
-            {Object.entries(parsedSpecs).map(([key, value]) => (
-              <tr key={key} className="border-b border-border hover:bg-accent/5 transition-colors">
-                <td className="py-3 px-4 font-medium text-muted-foreground w-1/3 align-top border-r border-border capitalize">{key}</td>
-                <td className="py-3 px-4 text-foreground font-medium leading-relaxed">{String(value)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    );
-  }
-
-  // Fallback cuối cùng
-  return <p>Dữ liệu không đúng định dạng.</p>;
+  // Luồng 3: Nếu tất cả đều thất bại, in thẳng raw text ra màn hình
+  return <div className="p-4 text-sm text-foreground whitespace-pre-wrap">{String(specs)}</div>;
 }
 
 // ============================================
