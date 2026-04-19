@@ -22,6 +22,7 @@ import {
   deleteVoucher,
   fetchAllVouchers,
   toggleVoucher,
+  updateVoucher,
 } from '@/lib/voucherService';
 import useAuthStore from '@/store/authStore';
 import {
@@ -356,30 +357,34 @@ function TabOrders() {
 // ============================================================
 function TabAdmin() {
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-      {/* Main Content — 2 cột */}
-      <div className="xl:col-span-2 space-y-6">
+    <div className="grid grid-cols-1 gap-8">
+      {/* Nâng cấp khu vực hiển thị danh mục Product và Voucher */}
+      <div className="space-y-6">
         {/* CRUD Sản phẩm */}
         <ProductAdmin />
 
-        {/* Quản lý Voucher — Bảng */}
-        <VoucherTable />
-      </div>
-
-      {/* Sidebar — Voucher (1 cột phải) */}
-      <div className="xl:col-span-1">
-        <VoucherSidebar />
+        {/* Quản lý Voucher Đã Tái Cấu Trúc */}
+        <VoucherAdmin />
       </div>
     </div>
   );
 }
 
 // ============================================================
-// Voucher Table — Bảng danh sách voucher
+// Voucher Admin — Quản lý Voucher (Table + Form)
 // ============================================================
-function VoucherTable() {
+function VoucherAdmin() {
   const [vouchers, setVouchers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
+  const [toast, setToast] = useState(null);
+  
+  // Form State
+  const [editingId, setEditingId] = useState(null);
+  const [code, setCode] = useState('');
+  const [type, setType] = useState('percentage');
+  const [value, setValue] = useState('');
+  const [expiredAt, setExpiredAt] = useState('');
 
   const loadVouchers = useCallback(async () => {
     setLoading(true);
@@ -391,6 +396,56 @@ function VoucherTable() {
   useEffect(() => {
     loadVouchers();
   }, [loadVouchers]);
+
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
+  const showToast = (message, type = 'success') => setToast({ message, type });
+
+  const resetForm = () => {
+    setEditingId(null);
+    setCode('');
+    setType('percentage');
+    setValue('');
+    setExpiredAt('');
+  };
+
+  const handleEdit = (voucher) => {
+    setEditingId(voucher.id);
+    setCode(voucher.code);
+    setType(voucher.type);
+    setValue(voucher.value);
+    setExpiredAt(voucher.expired_at ? voucher.expired_at.slice(0, 10) : '');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!code.trim() || !value) {
+      showToast('Vui lòng điền đủ mã và giá trị', 'error');
+      return;
+    }
+    setCreating(true);
+    try {
+      if (editingId) {
+        const updated = await updateVoucher(editingId, { code, type, value: Number(value), expired_at: expiredAt });
+        setVouchers((prev) => prev.map((v) => (v.id === editingId ? updated : v)));
+        showToast('Cập nhật voucher thành công!', 'success');
+      } else {
+        const newVoucher = await createVoucher({ code, type, value: Number(value), expired_at: expiredAt });
+        setVouchers((prev) => [newVoucher, ...prev]);
+        showToast('Tạo voucher thành công!', 'success');
+      }
+      resetForm();
+    } catch (err) {
+      showToast(`Lỗi: ${err.message}`, 'error');
+    }
+    setCreating(false);
+  };
 
   const handleToggle = async (id, currentState) => {
     try {
@@ -413,317 +468,118 @@ function VoucherTable() {
     }
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Vô thời hạn';
+    const d = new Date(dateString);
+    return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
+  };
+
   return (
-    <div className="rounded-2xl border border-border bg-card p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+    <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+      {/* Cột 1: Form Thêm/Sửa */}
+      <div className="xl:col-span-1 border border-border bg-card rounded-2xl p-6 h-fit sticky top-20">
+        <h2 className="text-lg font-bold text-foreground flex items-center gap-2 mb-4">
           <Ticket className="h-5 w-5 text-accent" />
-          Danh sách Voucher
+          {editingId ? 'Cập nhật Voucher' : 'Thêm mới Voucher'}
         </h2>
-        <Button variant="ghost" size="sm" onClick={loadVouchers} className="text-xs">
-          Làm mới
-        </Button>
-      </div>
-
-      {loading ? (
-        <div className="space-y-3">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-12 rounded-lg bg-muted animate-pulse" />
-          ))}
-        </div>
-      ) : vouchers.length === 0 ? (
-        <p className="text-sm text-muted-foreground text-center py-8">
-          Chưa có voucher nào. Tạo mới ở sidebar bên phải.
-        </p>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="text-left py-2.5 px-3 font-semibold text-muted-foreground">
-                  Mã
-                </th>
-                <th className="text-left py-2.5 px-3 font-semibold text-muted-foreground">
-                  Loại
-                </th>
-                <th className="text-right py-2.5 px-3 font-semibold text-muted-foreground">
-                  Giá trị
-                </th>
-                <th className="text-center py-2.5 px-3 font-semibold text-muted-foreground">
-                  Trạng thái
-                </th>
-                <th className="text-right py-2.5 px-3 font-semibold text-muted-foreground">
-                  Hành động
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {vouchers.map((voucher) => (
-                <tr
-                  key={voucher.id}
-                  className="border-b border-border/50 hover:bg-muted/30 transition-colors"
-                >
-                  <td className="py-3 px-3">
-                    <code className="px-2 py-0.5 rounded bg-muted text-accent font-mono font-bold text-xs">
-                      {voucher.code}
-                    </code>
-                  </td>
-                  <td className="py-3 px-3 text-foreground">
-                    {voucher.type === 'percentage' ? 'Giảm %' : 'Giảm cố định'}
-                  </td>
-                  <td className="py-3 px-3 text-right font-semibold text-foreground">
-                    {voucher.type === 'percentage'
-                      ? `${voucher.value}%`
-                      : `${Number(voucher.value).toLocaleString('vi-VN')}đ`}
-                  </td>
-                  <td className="py-3 px-3 text-center">
-                    <button
-                      onClick={() => handleToggle(voucher.id, voucher.is_active)}
-                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold transition-colors ${
-                        voucher.is_active
-                          ? 'bg-success/15 text-success hover:bg-success/25'
-                          : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                      }`}
-                    >
-                      {voucher.is_active ? (
-                        <>
-                          <Check className="h-3 w-3" /> Active
-                        </>
-                      ) : (
-                        <>
-                          <X className="h-3 w-3" /> Off
-                        </>
-                      )}
-                    </button>
-                  </td>
-                  <td className="py-3 px-3 text-right">
-                    <button
-                      onClick={() => handleDelete(voucher.id)}
-                      className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
-                      aria-label="Xoá voucher"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ============================================================
-// Voucher Sidebar — Form thêm nhanh + Quick Copy
-// ============================================================
-function VoucherSidebar() {
-  const [vouchers, setVouchers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [creating, setCreating] = useState(false);
-  const [copiedId, setCopiedId] = useState(null);
-  const [toast, setToast] = useState(null);
-
-  // Form state
-  const [code, setCode] = useState('');
-  const [type, setType] = useState('percentage');
-  const [value, setValue] = useState('');
-
-  const loadVouchers = useCallback(async () => {
-    setLoading(true);
-    const data = await fetchAllVouchers();
-    setVouchers(data);
-    setLoading(false);
-  }, []);
-
-  useEffect(() => {
-    loadVouchers();
-  }, [loadVouchers]);
-
-  // Toast auto-dismiss
-  useEffect(() => {
-    if (toast) {
-      const timer = setTimeout(() => setToast(null), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [toast]);
-
-  const showToast = (message, type = 'success') => {
-    setToast({ message, type });
-  };
-
-  const handleCopy = async (voucherCode, id) => {
-    try {
-      await navigator.clipboard.writeText(voucherCode);
-      setCopiedId(id);
-      showToast(`Đã copy mã "${voucherCode}"`, 'success');
-      setTimeout(() => setCopiedId(null), 2000);
-    } catch {
-      showToast('Không thể copy mã', 'error');
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!code.trim() || !value) {
-      showToast('Vui lòng điền đầy đủ thông tin', 'error');
-      return;
-    }
-    setCreating(true);
-    try {
-      const newVoucher = await createVoucher({ code, type, value: Number(value) });
-      setVouchers((prev) => [newVoucher, ...prev]);
-      setCode('');
-      setValue('');
-      showToast('Đã tạo voucher thành công!', 'success');
-    } catch (err) {
-      showToast(`Lỗi: ${err.message}`, 'error');
-    }
-    setCreating(false);
-  };
-
-  return (
-    <div className="sticky top-20 space-y-5">
-      {/* Toast inline */}
-      {toast && (
-        <div
-          className={`p-3 rounded-xl text-sm font-medium border-2 animate-in slide-in-from-top fade-in duration-200 ${
-            toast.type === 'success'
-              ? 'bg-success/10 text-success border-success/30'
-              : 'bg-destructive/10 text-destructive border-destructive/30'
-          }`}
-        >
-          {toast.message}
-        </div>
-      )}
-
-      {/* Form Thêm Voucher */}
-      <div className="rounded-2xl border border-border bg-card p-5">
-        <h3 className="text-base font-bold text-foreground flex items-center gap-2 mb-4">
-          <Plus className="h-4 w-4 text-accent" />
-          Thêm Voucher nhanh
-        </h3>
-
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <div>
-            <label
-              htmlFor="voucher-code"
-              className="text-xs font-semibold text-muted-foreground uppercase tracking-wider"
-            >
-              Mã voucher
-            </label>
-            <input
-              id="voucher-code"
-              type="text"
-              placeholder="VD: GIAM20"
-              value={code}
-              onChange={(e) => setCode(e.target.value.toUpperCase())}
-              className="w-full mt-1 h-10 px-3 rounded-lg border border-input bg-background text-foreground text-sm font-mono font-bold placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
-            />
+        
+        {toast && (
+          <div className={`mb-4 p-3 rounded-xl text-sm font-medium border-2 animate-in fade-in ${toast.type === 'success' ? 'bg-success/10 text-success border-success/30' : 'bg-destructive/10 text-destructive border-destructive/30'}`}>
+            {toast.message}
           </div>
+        )}
 
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label
-              htmlFor="voucher-type"
-              className="text-xs font-semibold text-muted-foreground uppercase tracking-wider"
-            >
-              Loại giảm giá
-            </label>
-            <select
-              id="voucher-type"
-              value={type}
-              onChange={(e) => setType(e.target.value)}
-              className="w-full mt-1 h-10 px-3 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
-            >
+            <label className="text-xs font-semibold text-muted-foreground uppercase">Mã voucher</label>
+            <input type="text" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="VD: GIAM20" className="w-full mt-1 h-10 px-3 rounded-lg border border-input bg-background/50 text-sm focus:ring-2 focus:ring-accent outline-none font-mono font-bold" />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground uppercase">Loại giảm giá</label>
+            <select value={type} onChange={(e) => setType(e.target.value)} className="w-full mt-1 h-10 px-3 rounded-lg border border-input bg-background/50 text-sm focus:ring-2 focus:ring-accent outline-none">
               <option value="percentage">Giảm theo %</option>
               <option value="fixed">Giảm số tiền cố định</option>
             </select>
           </div>
-
           <div>
-            <label
-              htmlFor="voucher-value"
-              className="text-xs font-semibold text-muted-foreground uppercase tracking-wider"
-            >
-              Giá trị {type === 'percentage' ? '(%)' : '(VNĐ)'}
-            </label>
-            <input
-              id="voucher-value"
-              type="number"
-              min={1}
-              placeholder={type === 'percentage' ? 'VD: 20' : 'VD: 100000'}
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              className="w-full mt-1 h-10 px-3 rounded-lg border border-input bg-background text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-            />
+            <label className="text-xs font-semibold text-muted-foreground uppercase">Giá trị</label>
+            <input type="number" value={value} onChange={(e) => setValue(e.target.value)} min={1} placeholder={type === 'percentage' ? '20' : '100000'} className="w-full mt-1 h-10 px-3 rounded-lg border border-input bg-background/50 text-sm focus:ring-2 focus:ring-accent outline-none" />
           </div>
-
-          <Button
-            type="submit"
-            className="w-full h-10 bg-accent hover:bg-accent/90 text-accent-foreground font-bold rounded-xl"
-            disabled={creating}
-          >
-            {creating ? 'Đang tạo...' : 'Tạo Voucher'}
-          </Button>
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground uppercase">Ngày hết hạn (Tuỳ chọn)</label>
+            <input type="date" value={expiredAt} onChange={(e) => setExpiredAt(e.target.value)} className="w-full mt-1 h-10 px-3 rounded-lg border border-input bg-background/50 text-sm focus:ring-2 focus:ring-accent outline-none" />
+          </div>
+          
+          <div className="flex gap-2 pt-2">
+            {editingId && (
+              <Button type="button" variant="outline" onClick={resetForm} className="w-full rounded-xl">Huỷ</Button>
+            )}
+            <Button type="submit" disabled={creating} className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-bold rounded-xl">
+              {creating ? 'Đang xử lý...' : (editingId ? 'Cập nhật' : 'Tạo mới')}
+            </Button>
+          </div>
         </form>
       </div>
 
-      {/* Quick Copy — Danh sách voucher nhỏ */}
-      <div className="rounded-2xl border border-border bg-card p-5">
-        <h3 className="text-base font-bold text-foreground flex items-center gap-2 mb-4">
-          <Tag className="h-4 w-4 text-accent" />
-          Voucher hiện có
-        </h3>
+      {/* Cột 2: Danh sách Voucher */}
+      <div className="xl:col-span-2 border border-border bg-card rounded-2xl p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+            <Ticket className="h-5 w-5 text-accent" />
+            Danh sách Voucher
+          </h2>
+          <Button variant="ghost" size="sm" onClick={loadVouchers} className="text-xs">Làm mới</Button>
+        </div>
 
         {loading ? (
-          <div className="space-y-2">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-10 rounded-lg bg-muted animate-pulse" />
-            ))}
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => <div key={i} className="h-12 rounded-lg bg-muted animate-pulse" />)}
           </div>
         ) : vouchers.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-4">
-            Chưa có voucher nào
-          </p>
+          <p className="text-sm text-muted-foreground text-center py-8">Chưa có voucher nào.</p>
         ) : (
-          <div className="space-y-2 max-h-[400px] overflow-y-auto">
-            {vouchers.map((v) => (
-              <div
-                key={v.id}
-                className={`flex items-center justify-between p-2.5 rounded-lg border transition-all ${
-                  v.is_active
-                    ? 'border-border bg-muted/20 hover:bg-muted/40'
-                    : 'border-border/50 bg-muted/5 opacity-50'
-                }`}
-              >
-                <div className="flex-1 min-w-0">
-                  <code className="text-xs font-mono font-bold text-accent">
-                    {v.code}
-                  </code>
-                  <p className="text-[11px] text-muted-foreground">
-                    {v.type === 'percentage'
-                      ? `Giảm ${v.value}%`
-                      : `Giảm ${Number(v.value).toLocaleString('vi-VN')}đ`}
-                  </p>
-                </div>
-                <button
-                  onClick={() => handleCopy(v.code, v.id)}
-                  className={`p-1.5 rounded-lg transition-colors ${
-                    copiedId === v.id
-                      ? 'bg-success/15 text-success'
-                      : 'hover:bg-muted text-muted-foreground hover:text-accent'
-                  }`}
-                  title={`Copy mã ${v.code}`}
-                >
-                  {copiedId === v.id ? (
-                    <Check className="h-3.5 w-3.5" />
-                  ) : (
-                    <ClipboardCopy className="h-3.5 w-3.5" />
-                  )}
-                </button>
-              </div>
-            ))}
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm mt-2">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="text-left py-2.5 px-3 font-semibold text-muted-foreground whitespace-nowrap">Mã</th>
+                  <th className="text-left py-2.5 px-3 font-semibold text-muted-foreground whitespace-nowrap">Loại</th>
+                  <th className="text-left py-2.5 px-3 font-semibold text-muted-foreground whitespace-nowrap">Ngày hết hạn</th>
+                  <th className="text-center py-2.5 px-3 font-semibold text-muted-foreground whitespace-nowrap">Trạng thái</th>
+                  <th className="text-right py-2.5 px-3 font-semibold text-muted-foreground whitespace-nowrap">Hành động</th>
+                </tr>
+              </thead>
+              <tbody>
+                {vouchers.map((v) => (
+                  <tr key={v.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                    <td className="py-3 px-3">
+                      <code className="px-2 py-0.5 rounded bg-muted text-accent font-mono font-bold text-xs">{v.code}</code>
+                    </td>
+                    <td className="py-3 px-3 text-foreground whitespace-nowrap font-medium">
+                      {v.type === 'percentage' ? `Giảm ${v.value}%` : `Giảm ${Number(v.value).toLocaleString('vi-VN')}đ`}
+                    </td>
+                    <td className="py-3 px-3 text-muted-foreground text-xs whitespace-nowrap font-medium">
+                      {formatDate(v.expired_at)}
+                    </td>
+                    <td className="py-3 px-3 text-center">
+                      <button onClick={() => handleToggle(v.id, v.is_active)} className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors ${v.is_active ? 'bg-success/10 text-success hover:bg-success/20' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}>
+                        {v.is_active ? <><Check className="h-3 w-3" /> ACTIVE</> : <><X className="h-3 w-3" /> VÔ HIỆU</>}
+                      </button>
+                    </td>
+                    <td className="py-3 px-3 text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <button onClick={() => handleEdit(v)} className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" title="Sửa voucher">
+                          <Edit className="h-4 w-4" />
+                        </button>
+                        <button onClick={() => handleDelete(v.id)} className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors" title="Xoá voucher">
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
