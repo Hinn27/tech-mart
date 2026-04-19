@@ -8,9 +8,11 @@ import { formatPrice } from '@/lib/mock-data';
 import { cn } from '@/lib/utils';
 import { fetchActiveVouchers } from '@/lib/voucherService';
 import useCartStore from '@/store/cartStore';
+import useAuthStore from '@/store/authStore';
 import { motion } from 'framer-motion';
 import {
   ArrowLeft,
+  GraduationCap,
   Check,
   ClipboardCopy,
   Minus,
@@ -44,6 +46,7 @@ const categoryNames = {
 
 export default function CartPage() {
   const router = useRouter();
+  const user = useAuthStore((state) => state.user);
   const cart = useCartStore((state) => state.cart);
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const removeFromCart = useCartStore((state) => state.removeFromCart);
@@ -93,7 +96,11 @@ export default function CartPage() {
       : Math.min(appliedVoucher.value, subtotal)
     : 0;
 
-  const finalTotal = subtotal - discountAmount;
+  // Giảm giá sinh viên (10%)
+  const isStudent = user?.email?.toLowerCase().endsWith('.edu.vn');
+  const studentDiscount = isStudent ? Math.round(subtotal * 0.1) : 0;
+
+  const finalTotal = Math.max(0, subtotal - discountAmount - studentDiscount);
 
   // Copy mã voucher
   const handleCopy = useCallback(
@@ -343,6 +350,21 @@ export default function CartPage() {
                     </div>
                     <span className="font-bold text-success">
                       -{formatPrice(discountAmount)}
+                    </span>
+                  </div>
+                )}
+                
+                {/* Giảm giá Sinh viên (10%) */}
+                {isStudent && (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <GraduationCap className="h-4 w-4 text-emerald-500" />
+                      <span className="text-emerald-500 font-bold">
+                        Sinh viên (.edu.vn)
+                      </span>
+                    </div>
+                    <span className="font-bold text-emerald-500">
+                      -{formatPrice(studentDiscount)}
                     </span>
                   </div>
                 )}
