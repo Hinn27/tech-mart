@@ -17,6 +17,7 @@ export function OrderSummary({ shippingFee = 0, onPlaceOrder }) {
   const cart = useCartStore((state) => state.cart);
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const removeFromCart = useCartStore((state) => state.removeFromCart);
+  const clearCart = useCartStore((state) => state.clearCart);
 
   const appliedVoucher = useVoucherStore((state) => state.appliedVoucher);
   const voucherError = useVoucherStore((state) => state.voucherError);
@@ -74,6 +75,9 @@ export function OrderSummary({ shippingFee = 0, onPlaceOrder }) {
 
   const handlePlaceOrder = () => {
     onPlaceOrder?.();
+    // Xóa giỏ hàng và voucher sau khi đặt hàng thành công
+    clearCart();
+    removeVoucher();
     router.push('/dat-hang-thanh-cong');
   };
 
