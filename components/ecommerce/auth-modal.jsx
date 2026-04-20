@@ -1,11 +1,11 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { useSignIn, useSignUp, useSocialAuth } from '@/lib/auth';
+import { useSignIn, useSignUp, useSocialAuth, usePhoneAuth } from '@/lib/auth';
 import { cn } from '@/lib/utils';
 import useAuthStore from '@/store/authStore';
-import { Eye, EyeOff, Lock, Mail, User, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Eye, EyeOff, Lock, Mail, User, X, Phone, MessageSquare, ArrowLeft } from 'lucide-react';
+import { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
 export function AuthModal() {
@@ -14,7 +14,8 @@ export function AuthModal() {
 
   const signIn = useSignIn();
   const signUp = useSignUp();
-  const { signInWithGoogle, signInWithFacebook } = useSocialAuth();
+  const { signInWithGoogle } = useSocialAuth();
+  const { signInWithPhone, verifyPhoneOtp } = usePhoneAuth();
 
   const [mode, setMode] = useState('login');
   const [showPassword, setShowPassword] = useState(false);
@@ -29,10 +30,21 @@ export function AuthModal() {
     password: '',
     name: '',
     confirmPassword: '',
+    phone: '',
+    otp: '',
   });
 
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
+  const [countdown, setCountdown] = useState(0);
+  const timerRef = useRef(null);
+
+  useEffect(() => {
+    if (countdown > 0) {
+      timerRef.current = setTimeout(() => setCountdown(countdown - 1), 1000);
+    }
+    return () => clearTimeout(timerRef.current);
+  }, [countdown]);
 
   useEffect(() => {
     setMounted(true);
@@ -77,6 +89,14 @@ export function AuthModal() {
       case 'confirmPassword':
         if (!value) return 'Vui lòng xác nhận mật khẩu';
         if (value !== formData.password) return 'Mật khẩu không khớp';
+        break;
+      case 'phone':
+        if (!value) return 'Vui lòng nhập số điện thoại';
+        if (!/^(0|84)(3|5|7|8|9)([0-9]{8})$/.test(value.replace(/\s/g, ''))) return 'Số điện thoại không hợp lệ';
+        break;
+      case 'otp':
+        if (!value) return 'Vui lòng nhập mã OTP';
+        if (!/^[0-9]{6}$/.test(value)) return 'Mã OTP phải có 6 chữ số';
         break;
       default:
         break;
@@ -153,13 +173,16 @@ export function AuthModal() {
 
   const handleSocialLogin = async (provider) => {
     setServerError('');
+    if (provider === 'phone') {
+      setMode('phone');
+      return;
+    }
+
     setSocialLoading(provider);
 
     try {
       if (provider === 'google') {
         await signInWithGoogle();
-      } else {
-        await signInWithFacebook();
       }
       closeAuthModal();
     } catch (error) {
@@ -168,12 +191,55 @@ export function AuthModal() {
     }
   };
 
+  const handleSendOtp = async (e) => {
+    e.preventDefault();
+    if (!formData.phone || formData.phone.length < 10) {
+      setErrors({ phone: 'Vui lòng nhập số điện thoại hợp lệ' });
+      return;
+    }
+
+    setIsLoading(true);
+    setServerError('');
+
+    try {
+      await signInWithPhone(formData.phone);
+      setMode('otp');
+      setCountdown(60);
+    } catch (err) {
+      setServerError(err?.message || 'Không thể gửi mã OTP. Vui lòng thử lại.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    if (!formData.otp || formData.otp.length < 6) {
+      setErrors({ otp: 'Vui lòng nhập mã OTP 6 chữ số' });
+      return;
+    }
+
+    setIsLoading(true);
+    setServerError('');
+
+    try {
+      await verifyPhoneOtp(formData.phone, formData.otp);
+      closeAuthModal();
+      resetForm();
+    } catch (err) {
+      setServerError(err?.message || 'Mã OTP không đúng hoặc đã hết hạn.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const resetForm = () => {
-    setFormData({ email: '', password: '', name: '', confirmPassword: '' });
+    setFormData({ email: '', password: '', name: '', confirmPassword: '', phone: '', otp: '' });
     setErrors({});
     setTouched({});
     setServerError('');
     setSocialLoading('');
+    setCountdown(0);
   };
 
   const switchMode = (nextMode) => {
@@ -199,13 +265,25 @@ export function AuthModal() {
         </button>
 
         <div className="text-center mb-6">
+          {(mode === 'phone' || mode === 'otp') && (
+            <button
+              onClick={() => setMode('login')}
+              className="absolute left-6 top-6 p-1 rounded-full hover:bg-muted transition-colors text-muted-foreground"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </button>
+          )}
           <h2 className="text-2xl font-bold text-foreground mb-2">
-            {mode === 'login' ? 'Đăng nhập' : 'Đăng ký tài khoản'}
+            {mode === 'login' && 'Đăng nhập'}
+            {mode === 'register' && 'Đăng ký tài khoản'}
+            {mode === 'phone' && 'Đăng nhập bằng SMS'}
+            {mode === 'otp' && 'Xác nhận OTP'}
           </h2>
           <p className="text-sm text-muted-foreground">
-            {mode === 'login'
-              ? 'Chào mừng bạn quay trở lại!'
-              : 'Tạo tài khoản để trải nghiệm mua sắm tốt hơn'}
+            {mode === 'login' && 'Chào mừng bạn quay trở lại!'}
+            {mode === 'register' && 'Tạo tài khoản để trải nghiệm mua sắm tốt hơn'}
+            {mode === 'phone' && 'Chúng tôi sẽ gửi mã xác thực đến số điện thoại của bạn'}
+            {mode === 'otp' && `Mã xác thực đã được gửi đến ${formData.phone}`}
           </p>
         </div>
 
@@ -215,139 +293,224 @@ export function AuthModal() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {mode === 'register' && (
+        {(mode === 'login' || mode === 'register') && (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {mode === 'register' && (
+              <div className="space-y-1.5">
+                <label htmlFor="name" className="text-sm font-medium text-foreground">
+                  Họ và tên
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <input
+                    id="name"
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => handleChange('name', e.target.value)}
+                    onBlur={() => handleBlur('name')}
+                    placeholder="Nguyễn Văn A"
+                    className={cn(
+                      'w-full h-11 pl-10 pr-4 rounded-lg border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all',
+                      errors.name && touched.name ? 'border-destructive' : 'border-input'
+                    )}
+                  />
+                </div>
+                {errors.name && touched.name && (
+                  <p className="text-xs text-destructive">{errors.name}</p>
+                )}
+              </div>
+            )}
+
             <div className="space-y-1.5">
-              <label htmlFor="name" className="text-sm font-medium text-foreground">
-                Họ và tên
+              <label htmlFor="email" className="text-sm font-medium text-foreground">
+                Email
               </label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
-                  id="name"
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => handleChange('name', e.target.value)}
-                  onBlur={() => handleBlur('name')}
-                  placeholder="Nguyễn Văn A"
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => handleChange('email', e.target.value)}
+                  onBlur={() => handleBlur('email')}
+                  placeholder="example@email.com"
                   className={cn(
                     'w-full h-11 pl-10 pr-4 rounded-lg border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all',
-                    errors.name && touched.name ? 'border-destructive' : 'border-input'
+                    errors.email && touched.email ? 'border-destructive' : 'border-input'
                   )}
                 />
               </div>
-              {errors.name && touched.name && (
-                <p className="text-xs text-destructive">{errors.name}</p>
+              {errors.email && touched.email && (
+                <p className="text-xs text-destructive">{errors.email}</p>
               )}
             </div>
-          )}
 
-          <div className="space-y-1.5">
-            <label htmlFor="email" className="text-sm font-medium text-foreground">
-              Email
-            </label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => handleChange('email', e.target.value)}
-                onBlur={() => handleBlur('email')}
-                placeholder="example@email.com"
-                className={cn(
-                  'w-full h-11 pl-10 pr-4 rounded-lg border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all',
-                  errors.email && touched.email ? 'border-destructive' : 'border-input'
-                )}
-              />
-            </div>
-            {errors.email && touched.email && (
-              <p className="text-xs text-destructive">{errors.email}</p>
-            )}
-          </div>
-
-          <div className="space-y-1.5">
-            <label htmlFor="password" className="text-sm font-medium text-foreground">
-              Mật khẩu
-            </label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <input
-                id="password"
-                type={showPassword ? 'text' : 'password'}
-                value={formData.password}
-                onChange={(e) => handleChange('password', e.target.value)}
-                onBlur={() => handleBlur('password')}
-                placeholder="••••••••"
-                className={cn(
-                  'w-full h-11 pl-10 pr-11 rounded-lg border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all',
-                  errors.password && touched.password ? 'border-destructive' : 'border-input'
-                )}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
-            {errors.password && touched.password && (
-              <p className="text-xs text-destructive">{errors.password}</p>
-            )}
-          </div>
-
-          {mode === 'register' && (
             <div className="space-y-1.5">
-              <label htmlFor="confirmPassword" className="text-sm font-medium text-foreground">
-                Xác nhận mật khẩu
+              <label htmlFor="password" className="text-sm font-medium text-foreground">
+                Mật khẩu
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
-                  id="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  value={formData.confirmPassword}
-                  onChange={(e) => handleChange('confirmPassword', e.target.value)}
-                  onBlur={() => handleBlur('confirmPassword')}
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={formData.password}
+                  onChange={(e) => handleChange('password', e.target.value)}
+                  onBlur={() => handleBlur('password')}
                   placeholder="••••••••"
                   className={cn(
                     'w-full h-11 pl-10 pr-11 rounded-lg border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all',
-                    errors.confirmPassword && touched.confirmPassword ? 'border-destructive' : 'border-input'
+                    errors.password && touched.password ? 'border-destructive' : 'border-input'
                   )}
                 />
                 <button
                   type="button"
-                  onClick={() => setShowConfirmPassword((prev) => !prev)}
+                  onClick={() => setShowPassword((prev) => !prev)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
-              {errors.confirmPassword && touched.confirmPassword && (
-                <p className="text-xs text-destructive">{errors.confirmPassword}</p>
+              {errors.password && touched.password && (
+                <p className="text-xs text-destructive">{errors.password}</p>
               )}
             </div>
-          )}
 
-          {mode === 'login' && (
-            <div className="text-right">
-              <a href="#" className="text-sm text-accent hover:underline">
-                Quên mật khẩu?
-              </a>
+            {mode === 'register' && (
+              <div className="space-y-1.5">
+                <label htmlFor="confirmPassword" className="text-sm font-medium text-foreground">
+                  Xác nhận mật khẩu
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    value={formData.confirmPassword}
+                    onChange={(e) => handleChange('confirmPassword', e.target.value)}
+                    onBlur={() => handleBlur('confirmPassword')}
+                    placeholder="••••••••"
+                    className={cn(
+                      'w-full h-11 pl-10 pr-11 rounded-lg border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all',
+                      errors.confirmPassword && touched.confirmPassword ? 'border-destructive' : 'border-input'
+                    )}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword((prev) => !prev)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                {errors.confirmPassword && touched.confirmPassword && (
+                  <p className="text-xs text-destructive">{errors.confirmPassword}</p>
+                )}
+              </div>
+            )}
+
+            {mode === 'login' && (
+              <div className="text-right">
+                <a href="#" className="text-sm text-accent hover:underline">
+                  Quên mật khẩu?
+                </a>
+              </div>
+            )}
+
+            <Button
+              type="submit"
+              disabled={isLoading || !!socialLoading}
+              className="w-full h-11 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold disabled:opacity-50"
+            >
+              {isLoading
+                ? mode === 'login' ? 'Đang đăng nhập...' : 'Đang đăng ký...'
+                : mode === 'login' ? 'Đăng nhập' : 'Đăng ký'}
+            </Button>
+          </form>
+        )}
+
+        {mode === 'phone' && (
+          <form onSubmit={handleSendOtp} className="space-y-4">
+            <div className="space-y-1.5">
+              <label htmlFor="phone" className="text-sm font-medium text-foreground">
+                Số điện thoại
+              </label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <input
+                  id="phone"
+                  type="tel"
+                  autoFocus
+                  value={formData.phone}
+                  onChange={(e) => handleChange('phone', e.target.value)}
+                  onBlur={() => handleBlur('phone')}
+                  placeholder="09xx xxx xxx"
+                  className={cn(
+                    'w-full h-11 pl-10 pr-4 rounded-lg border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all',
+                    errors.phone && touched.phone ? 'border-destructive' : 'border-input'
+                  )}
+                />
+              </div>
+              {errors.phone && touched.phone && (
+                <p className="text-xs text-destructive">{errors.phone}</p>
+              )}
             </div>
-          )}
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="w-full h-11 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold disabled:opacity-50"
+            >
+              {isLoading ? 'Đang gửi mã...' : 'Tiếp tục'}
+            </Button>
+          </form>
+        )}
 
-          <Button
-            type="submit"
-            disabled={isLoading || !!socialLoading}
-            className="w-full h-11 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold disabled:opacity-50"
-          >
-            {isLoading
-              ? mode === 'login' ? 'Đang đăng nhập...' : 'Đang đăng ký...'
-              : mode === 'login' ? 'Đăng nhập' : 'Đăng ký'}
-          </Button>
-        </form>
+        {mode === 'otp' && (
+          <form onSubmit={handleVerifyOtp} className="space-y-4">
+            <div className="space-y-1.5">
+              <label htmlFor="otp" className="text-sm font-medium text-foreground">
+                Mã xác thực OTP
+              </label>
+              <div className="relative">
+                <MessageSquare className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <input
+                  id="otp"
+                  type="text"
+                  maxLength={6}
+                  autoFocus
+                  value={formData.otp}
+                  onChange={(e) => handleChange('otp', e.target.value)}
+                  onBlur={() => handleBlur('otp')}
+                  placeholder="123456"
+                  className={cn(
+                    'w-full h-11 pl-10 pr-4 rounded-lg border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all tracking-[0.5em] text-center font-bold text-lg',
+                    errors.otp && touched.otp ? 'border-destructive' : 'border-input'
+                  )}
+                />
+              </div>
+              {errors.otp && touched.otp && (
+                <p className="text-xs text-destructive">{errors.otp}</p>
+              )}
+            </div>
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="w-full h-11 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold disabled:opacity-50"
+            >
+              {isLoading ? 'Đang xác thực...' : 'Xác nhận mã OTP'}
+            </Button>
+            <div className="text-center">
+              <button
+                type="button"
+                disabled={countdown > 0 || isLoading}
+                onClick={handleSendOtp}
+                className="text-sm text-accent hover:underline disabled:text-muted-foreground disabled:no-underline"
+              >
+                {countdown > 0 ? `Gửi lại mã sau ${countdown}s` : 'Gửi lại mã OTP'}
+              </button>
+            </div>
+          </form>
+        )}
 
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
@@ -377,12 +540,10 @@ export function AuthModal() {
             variant="outline"
             className="h-11"
             disabled={!!socialLoading || isLoading}
-            onClick={() => handleSocialLogin('facebook')}
+            onClick={() => handleSocialLogin('phone')}
           >
-            <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-            </svg>
-            {socialLoading === 'facebook' ? 'Đang mở...' : 'Facebook'}
+            <Phone className="h-4 w-4 mr-2" />
+            SMS
           </Button>
         </div>
 
